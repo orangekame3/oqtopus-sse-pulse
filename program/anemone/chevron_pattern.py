@@ -11,8 +11,12 @@ try:
         muxes=[2],
     )
     exp.connect()
-    res = exp.chevron_pattern(targets="Q08")
-
+    res = exp.chevron_pattern(
+        targets="Q08",
+        detuning_range=np.linspace(-0.03, 0.03, 11),
+        time_range=np.arange(0, 201, 16),
+        )
+    
     result = {
         "time_range": np.array(res["time_range"]).round(6).tolist(),
         "detuning_range": np.array(res["detuning_range"]).round(6).tolist(),
