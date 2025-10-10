@@ -1,4 +1,8 @@
-# oqtopus-sse-pulse
+# oqtopus-sse-
+
+## Prequisite
+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
 ## Setup
 
