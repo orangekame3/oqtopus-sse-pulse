@@ -1,4 +1,4 @@
-# oqtopus-sse-
+# oqtopus-sse-pulse
 
 ## Prequisite
 
