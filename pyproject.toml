@@ -1,13 +1,24 @@
 [project]
 name = "oqtopus-sse-pulse"
 version = "0.1.0"
-description = "Add your description here"
+description = "SSE-based pulse runtime utilities for OQTOPUS"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "qubex",
     "quri-parts-oqtopus>=1.0.3",
 ]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["oqtopus_sse_pulse*"]
 
 [tool.uv.sources]
 qubex = { git = "https://github.com/amachino/qubex.git" }

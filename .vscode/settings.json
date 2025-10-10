@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "python.analysis.extraPaths": ["./src"],
+  "python.analysis.typeCheckingMode": "basic",   // 必要なら "standard" でも可
+  "python.envFile": "${workspaceFolder}/.env"
+}

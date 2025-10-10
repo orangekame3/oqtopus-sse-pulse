@@ -1931,7 +1931,7 @@ wheels = [
 [[package]]
 name = "oqtopus-sse-pulse"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "qubex" },
     { name = "quri-parts-oqtopus" },

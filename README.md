@@ -8,6 +8,12 @@ cd oqtopus-sse-pulse
 uv sync
 ```
 
+## Usage
+
+```bash
+cp -rf examples/* workspace/
+```
+
 ## Note
 
 To restrict access qubit, provider have to remove qubit frequency from props.yaml
