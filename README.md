@@ -15,6 +15,7 @@ uv sync
 ## Usage
 
 ```bash
+mkdir workspace
 cp -rf examples/* workspace/
 ```
 
