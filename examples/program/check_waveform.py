@@ -4,9 +4,11 @@ from qubex.experiment import Experiment
 
 print("start program")
 try:
+    username = "your_name"
     exp = Experiment(
         chip_id="64Qv2",
         muxes=[2],
+        params_dir=f"/sse/in/repo/{username}/params"
     )
     exp.connect()
     res = exp.check_waveform(targets="Q08")
