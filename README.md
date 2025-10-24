@@ -36,3 +36,7 @@ cp -rf examples/* workspace/
 ## Note
 
 To restrict access qubit, provider have to remove qubit frequency from props.yaml
+
+## Your Config Data
+
+https://github.com/orangekame3/oqtopus-pulse-config
