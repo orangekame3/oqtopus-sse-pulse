@@ -1,7 +1,7 @@
 import traceback
 
 from qubex.experiment import Experiment
-from qubex.pulse import Pulse, PulseSchedule
+from qubex.pulse import Pulse, PulseSchedule, FlatTop
 import numpy as np
 import json
 
@@ -30,29 +30,37 @@ try:
     # 一時的に駆動周波数をqubit共鳴周波数に設定
     with exp.modified_frequencies({qubit: qubit_frequency}):
 
-        # ラビ振動測定
         targets = [qubit]  # 測定対象qubitリスト
-        time_range = np.arange(0, 200, 4) # 掃引時間リスト (単位: ns, 2nsより細かくはできない)
-        ampl = 0.05 # パルス振幅(0~1の範囲の無次元相対量)
+        ampl_range = np.linspace(0, 0.1, 21) # 振幅掃引範囲(0~1の範囲の無次元相対量)
 
-        # PulseScheduleクラスのrabi_sequenceインスタンスを作成. 
+        # PulseScheduleクラスのhpi_calibインスタンスを作成. 
         # 1つ引数が必要な関数のオブジェクト. 
-        def rabi_sequence(T: int) -> PulseSchedule:
+        def hpi_calib(ampl: int) -> PulseSchedule:
             with PulseSchedule(targets) as ps:
                 for target in targets:
-                    ps.add(target, Pulse([ampl] * int(T/2)))  # 長さT nsの矩形波パルス (2nsサンプリングなので2で割っている)
+                    ps.add(
+                        target, # qubitラベル
+                        FlatTop(
+                            duration = 32,
+                            amplitude = ampl,
+                            tau = 12,
+                        ).repeated(4), 
+                        # qubex.pulseで定義されているFlatTopパルスクラスのオブジェクト. 
+                        # 立ち上がり・立ち下がりはcosine形状で長さはtau=12ns, 全体の長さはduration=32nsなので, flattop部の長さは8nsとなる.
+                        # .repeated(4)により4回繰り返されるので, hpi回転であればちょうど1周して元に戻る.
+                    )
             return ps
 
         # 掃引が必要な実験では、sweep_parameterメソッドを使用するのが便利.
         res = exp.sweep_parameter(
-            sequence = rabi_sequence, # 引数に関数を指定
-            sweep_range = time_range, # 掃引時間リスト
+            sequence = hpi_calib, # 引数に関数を指定
+            sweep_range = ampl_range, # 掃引振幅リスト
         )
 
 
     # 結果を整形してJSON形式で出力
     result = {
-        "time_range": res.data[qubit].sweep_range.tolist(),
+        "ampl_range": res.data[qubit].sweep_range.tolist(),
         "data_real": res.data[qubit].data.real.tolist(),
         "data_imag": res.data[qubit].data.imag.tolist(),
     }

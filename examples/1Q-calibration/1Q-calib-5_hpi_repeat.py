@@ -1,7 +1,7 @@
 import traceback
 
 from qubex.experiment import Experiment
-from qubex.pulse import Pulse, PulseSchedule
+from qubex.pulse import Pulse, PulseSchedule, FlatTop
 import numpy as np
 import json
 
@@ -10,10 +10,12 @@ chip_id='64Qv3'
 # muxes=[9]
 # qubit = 'Q36'
 # qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
+# hpi_amplitude = 0.05  # <-- ここを適切なhpi振幅に変更してください
 
 muxes=[1]
 qubit = 'Q04'
 qubit_frequency = 7.984325
+hpi_amplitude = 0.042883  
 
 
 print("start program")
@@ -30,29 +32,34 @@ try:
     # 一時的に駆動周波数をqubit共鳴周波数に設定
     with exp.modified_frequencies({qubit: qubit_frequency}):
 
-        # ラビ振動測定
         targets = [qubit]  # 測定対象qubitリスト
-        time_range = np.arange(0, 200, 4) # 掃引時間リスト (単位: ns, 2nsより細かくはできない)
-        ampl = 0.05 # パルス振幅(0~1の範囲の無次元相対量)
+        n_repeat_list = np.arange(21)  # hpiパルスの繰り返し回数の掃引リスト
 
-        # PulseScheduleクラスのrabi_sequenceインスタンスを作成. 
+        # PulseScheduleクラスのhpi_repeatインスタンスを作成. 
         # 1つ引数が必要な関数のオブジェクト. 
-        def rabi_sequence(T: int) -> PulseSchedule:
+        def hpi_repeat(n_repeat: int) -> PulseSchedule:
             with PulseSchedule(targets) as ps:
                 for target in targets:
-                    ps.add(target, Pulse([ampl] * int(T/2)))  # 長さT nsの矩形波パルス (2nsサンプリングなので2で割っている)
+                    ps.add(
+                        target, # qubitラベル
+                        FlatTop(
+                            duration = 32,
+                            amplitude = hpi_amplitude,
+                            tau = 12,
+                        ).repeated(n_repeat),  # 繰り返し回数を指定
+                    )
             return ps
 
         # 掃引が必要な実験では、sweep_parameterメソッドを使用するのが便利.
         res = exp.sweep_parameter(
-            sequence = rabi_sequence, # 引数に関数を指定
-            sweep_range = time_range, # 掃引時間リスト
+            sequence = hpi_repeat, # 引数に関数を指定
+            sweep_range = n_repeat_list, # 掃引振幅リスト
         )
 
 
     # 結果を整形してJSON形式で出力
     result = {
-        "time_range": res.data[qubit].sweep_range.tolist(),
+        "n_repeat_list": res.data[qubit].sweep_range.tolist(),
         "data_real": res.data[qubit].data.real.tolist(),
         "data_imag": res.data[qubit].data.imag.tolist(),
     }

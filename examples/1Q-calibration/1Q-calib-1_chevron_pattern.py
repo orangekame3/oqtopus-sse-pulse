@@ -4,13 +4,18 @@ from qubex.experiment import Experiment
 import numpy as np
 import json
 
+# 使用するqubitの設定
+chip_id='64Qv3'
+muxes=[9]
+qubit = 'Q36'
+
 
 print("start program")
 try:
     # qubexのExperimentクラスのインスタンスを作成
     exp = Experiment(
-        chip_id='64Qv3',
-        muxes=[9],
+        chip_id=chip_id,
+        muxes=muxes,
     )
 
     # デバイスに接続
@@ -18,11 +23,11 @@ try:
 
     # qubexメソッドのchevron_pattern実験を実行
     res = exp.chevron_pattern(
-        targets='Q36', # 測定対象qubit
+        targets=qubit, # 測定対象qubit
         detuning_range=np.linspace(-0.03, 0.03, 11), # 駆動周波数の掃引範囲 (中心周波数からの相対量). 単位はGHz
         time_range=np.arange(0, 201, 16),  # 測定時間の掃引範囲. 単位はns (最小単位: 2ns)
-        # frequencies={'Q36': 8.0},  # 駆動周波数の中心周波数. 未設定の場合は阪大実験チームで登録されている設定値が使用される. 単位はGHz
-        # amplitudes={'Q36': 0.1},  # 駆動振幅 (0から1までの無次元相対値). 未設定の場合は阪大実験チームで登録されている設定値が使用される.
+        # frequencies={qubit: 8.0},  # 駆動周波数の中心周波数. 未設定の場合は阪大実験チームで登録されている設定値が使用される. 単位はGHz
+        # amplitudes={qubit: 0.1},  # 駆動振幅 (0から1までの無次元相対値). 未設定の場合は阪大実験チームで登録されている設定値が使用される.
         # shots=1024,  # 1点あたりの測定回数. デフォルトは1024
     )
 

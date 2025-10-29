@@ -7,9 +7,16 @@ import json
 
 # 使用するqubitの設定
 chip_id='64Qv3'
-muxes=[9]
-qubit = 'Q36'
-qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
+# muxes=[9]
+# qubit = 'Q36'
+# qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
+# hpi_amplitude = 0.05  # <-- ここを適切なhpi振幅に変更してください
+
+muxes=[1]
+qubit = 'Q04'
+qubit_frequency = 7.984325
+hpi_amplitude = 0.042883  
+
 
 print("start program")
 try:
@@ -25,9 +32,8 @@ try:
     # 一時的に駆動周波数をqubit共鳴周波数に設定
     with exp.modified_frequencies({qubit: qubit_frequency}): 
 
-        # 波形リストを自分で作成
-        # 2nsサンプリングなので, これは振幅0.1+0.1j, 長さ10nsの矩形波に相当
-        waveform = [0.1 + 0.1j, 0.1 + 0.1j, 0.1 + 0.1j, 0.1 + 0.1j, 0.1 + 0.1j]
+        # 空の波形リストを作成
+        waveform = []
 
         # waveformリストを, qubexのPulseクラスのインスタンスに変換
         waveform = Pulse(waveform)
@@ -39,7 +45,7 @@ try:
         res = exp.measure(
             sequence = sequence, # 自作の波形シーケンスを指定
             mode = "avg", # 単発射影測定の場合は"single"を指定
-            shots = 1024 # ショット数
+            shots = 1 # ショット数
         ) # MeasureResultクラスを出力する
 
 

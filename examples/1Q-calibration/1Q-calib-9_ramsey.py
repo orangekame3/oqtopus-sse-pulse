@@ -1,7 +1,7 @@
 import traceback
 
 from qubex.experiment import Experiment
-from qubex.pulse import Pulse, PulseSchedule
+from qubex.pulse import Pulse, PulseSchedule, FlatTop, Blank
 import numpy as np
 import json
 
@@ -10,10 +10,12 @@ chip_id='64Qv3'
 # muxes=[9]
 # qubit = 'Q36'
 # qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
+# hpi_amplitude = 0.05  # <-- ここを適切なhpi振幅に変更してください
 
 muxes=[1]
 qubit = 'Q04'
 qubit_frequency = 7.984325
+hpi_amplitude = 0.042883  
 
 
 print("start program")
@@ -27,32 +29,40 @@ try:
     # デバイスに接続
     exp.connect()
 
-    # 一時的に駆動周波数をqubit共鳴周波数に設定
-    with exp.modified_frequencies({qubit: qubit_frequency}):
+    # 駆動周波数の離調
+    detuning = 0.001 # 単位はGHz
 
-        # ラビ振動測定
+    # 一時的に駆動周波数をqubit共鳴周波数+detuningに設定
+    with exp.modified_frequencies({qubit: qubit_frequency + detuning}):
+
         targets = [qubit]  # 測定対象qubitリスト
-        time_range = np.arange(0, 200, 4) # 掃引時間リスト (単位: ns, 2nsより細かくはできない)
-        ampl = 0.05 # パルス振幅(0~1の範囲の無次元相対量)
+        time_list = np.linspace(0, 10_000, 101)  # 待ち時間掃引リスト (例: 0から10µsまでを101ステップで掃引)
+        hpi_pulse = FlatTop(
+                            duration = 32,
+                            amplitude = hpi_amplitude,
+                            tau = 12,
+                        )
 
-        # PulseScheduleクラスのrabi_sequenceインスタンスを作成. 
+        # PulseScheduleクラスのhpi_repeatインスタンスを作成. 
         # 1つ引数が必要な関数のオブジェクト. 
-        def rabi_sequence(T: int) -> PulseSchedule:
+        def ramsey(time: float) -> PulseSchedule:
             with PulseSchedule(targets) as ps:
                 for target in targets:
-                    ps.add(target, Pulse([ampl] * int(T/2)))  # 長さT nsの矩形波パルス (2nsサンプリングなので2で割っている)
+                    ps.add(target, hpi_pulse)
+                    ps.add(target, Blank(time))  # 指定した待ち時間だけ待機
+                    ps.add(target, hpi_pulse.shifted(np.pi))
             return ps
 
         # 掃引が必要な実験では、sweep_parameterメソッドを使用するのが便利.
         res = exp.sweep_parameter(
-            sequence = rabi_sequence, # 引数に関数を指定
-            sweep_range = time_range, # 掃引時間リスト
+            sequence = ramsey, # 引数に関数を指定
+            sweep_range = time_list, # 掃引リスト
         )
 
 
     # 結果を整形してJSON形式で出力
     result = {
-        "time_range": res.data[qubit].sweep_range.tolist(),
+        "time_list": res.data[qubit].sweep_range.tolist(),
         "data_real": res.data[qubit].data.real.tolist(),
         "data_imag": res.data[qubit].data.imag.tolist(),
     }
