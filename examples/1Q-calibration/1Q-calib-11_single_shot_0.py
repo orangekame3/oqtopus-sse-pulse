@@ -7,15 +7,10 @@ import json
 
 # 使用するqubitの設定
 chip_id='64Qv3'
-# muxes=[9]
-# qubit = 'Q36'
-# qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
-# hpi_amplitude = 0.05  # <-- ここを適切なhpi振幅に変更してください
-
-muxes=[1]
-qubit = 'Q04'
-qubit_frequency = 7.984325
-hpi_amplitude = 0.042883  
+muxes=[9]
+qubit = 'Q36'
+qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
+hpi_amplitude = 0.05  # <-- ここを適切なhpi振幅に変更してください 
 
 
 print("start program")
