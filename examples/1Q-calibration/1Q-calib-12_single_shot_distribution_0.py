@@ -10,7 +10,7 @@ chip_id='64Qv3'
 muxes=[9]
 qubit = 'Q36'
 qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
-hpi_amplitude = 0.05  # <-- ここを適切なhpi振幅に変更してください
+hpi_amplitude = 0.0273  # <-- ここを適切なhpi振幅に変更してください
 
 
 print("start program")
@@ -40,7 +40,7 @@ try:
         res = exp.measure(
             sequence = sequence, # 自作の波形シーケンスを指定
             mode = "single", # 単発射影測定の場合は"single"を指定
-            shots = 1024 # ショット数
+            shots = 1024, # ショット数
         ) # MeasureResultクラスを出力する
 
 
