@@ -1,11 +1,12 @@
 import traceback
-
+import json
 from oqtopus_sse_pulse.libs.test_utils import hello
 
 print("start program")
 try:
-    hello()
-    print("payload=")
+    result :dict = {}
+    result["message"] = hello()
+    print("payload="+  json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
 except Exception as e:
     print("Exception:", e)
