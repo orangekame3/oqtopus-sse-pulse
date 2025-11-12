@@ -1,7 +1,8 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Union, List, Any, Dict
+from typing import Union, List, Any, Dict, Optional
 from uuid import uuid4
+import json
 from quri_parts_oqtopus.backend import OqtopusSseBackend
 from .sselog import load_payloads_from_zip, load_session_from_zip_raw
 
@@ -24,6 +25,7 @@ class QuriAdapter:
         subdir.mkdir(parents=True, exist_ok=True)
 
         return Path(self.impl.download_log(job_id=job_id, save_dir=str(subdir)))
+
 
 
 def _ensure_paths(download_dir: Union[str, Path], extract_dir: Union[str, Path]) -> tuple[Path, Path]:
@@ -85,3 +87,51 @@ def collect_session_from_job(
     ddir, edir = _ensure_paths(download_dir, extract_dir)
     zip_path = _download_zip_or_fail(backend, job_id, ddir)
     return load_session_from_zip_raw(zip_path, edir)
+
+
+def save_calib_note_from_job(
+    backend: OqtopusSseBackend | QuriAdapter,
+    job_id: str,
+    output_path: Optional[Union[str, Path]] = None,
+    download_dir: Union[str, Path] = "download",
+    extract_dir: Union[str, Path] = "extracted"
+) -> Optional[Path]:
+    """
+    Convenience function to extract and save calibration note from a job.
+    
+    Args:
+        backend: Backend or adapter instance
+        job_id: Job ID to download and extract from
+        output_path: Path to save JSON file (default: extracted/calib_note.json)
+        download_dir: Directory to download ZIP to
+        extract_dir: Directory to extract log to
+        
+    Returns:
+        Path to saved JSON file, or None if no calib_note found
+    """
+    # Get payloads from job
+    payloads = collect_payloads_from_job(backend, job_id, download_dir, extract_dir)
+    
+    if not payloads:
+        return None
+        
+    # Extract calib_note from first payload
+    calib_note = payloads[0].get("calib_note")
+    if not calib_note:
+        return None
+    
+    # Set default output path if not provided
+    if output_path is None:
+        extract_path = Path(extract_dir)
+        output_path = extract_path / "calib_note.json"
+    else:
+        output_path = Path(output_path)
+    
+    # Ensure output directory exists
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Save to JSON file
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(calib_note, f, ensure_ascii=False, indent=2, separators=(",", ": "))
+    
+    return output_path
