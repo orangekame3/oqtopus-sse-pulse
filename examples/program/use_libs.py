@@ -1,6 +1,6 @@
 import traceback
 import json
-from oqtopus_sse_pulse.libs.test_utils import hello
+from oqtopus_sse_pulse.libs.miyanaga.myfunc import hello
 
 print("start program")
 try:

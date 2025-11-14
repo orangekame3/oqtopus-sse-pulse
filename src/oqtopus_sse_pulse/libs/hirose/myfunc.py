@@ -1,2 +1,2 @@
-def my_func():
-    pass
+def hello():
+    return "Hello from myfunc.py!"
