@@ -33,6 +33,12 @@ mkdir workspace
 cp -rf examples/* workspace/
 ```
 
+## Create your module
+
+1. Create your module directory under `src/oqtopus_sse_pulse/libs/your_name/`
+2. Create `myfunc.py` under your module directory
+3. Implement your function in `myfunc.py`
+
 ## Note
 
 To restrict access qubit, provider have to remove qubit frequency from props.yaml

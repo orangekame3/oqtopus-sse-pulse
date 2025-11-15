@@ -4,7 +4,6 @@ from typing import Union, List, Any, Iterator, Optional, Dict
 import re
 import zipfile
 import json
-import ast
 import io
 import os
 
@@ -35,13 +34,11 @@ def _open_text(path: Path) -> io.TextIOBase:
     except UnicodeDecodeError:
         return open(path, "r", encoding="latin-1")
 
+
 def _parse_payload(s: str) -> Any:
-    """Parse a payload string as JSON first, then fallback to Python literal syntax."""
+    """Parse a payload string as JSON."""
     s = s.strip().rstrip(",")
-    try:
-        return json.loads(s)
-    except Exception:
-        return ast.literal_eval(s)
+    return json.loads(s)
 
 def iter_payloads(log_path: Union[str, Path]) -> Iterator[Any]:
     """Iterate through lines containing 'payload =' and yield parsed payloads."""
