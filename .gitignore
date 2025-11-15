@@ -178,3 +178,4 @@ pyrightconfig.json
 download
 extracted
 workspace
+.DS_Store
