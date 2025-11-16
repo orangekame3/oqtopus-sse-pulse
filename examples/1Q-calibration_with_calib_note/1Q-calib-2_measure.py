@@ -9,7 +9,7 @@ import json
 chip_id='64Qv3'
 muxes=[9]
 qubit = 'Q36'
-qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
+
 
 print("start program")
 try:
@@ -22,25 +22,22 @@ try:
     # デバイスに接続
     exp.connect()
 
-    # 一時的に駆動周波数をqubit共鳴周波数に設定
-    with exp.modified_frequencies({qubit: qubit_frequency}): 
+    # 波形リストを自分で作成
+    # 2nsサンプリングなので, これは振幅0.+0.j, 長さ10nsの矩形波に相当
+    waveform = [0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j]
 
-        # 波形リストを自分で作成
-        # 2nsサンプリングなので, これは振幅0.1+0.1j, 長さ10nsの矩形波に相当
-        waveform = [0.1 + 0.1j, 0.1 + 0.1j, 0.1 + 0.1j, 0.1 + 0.1j, 0.1 + 0.1j]
+    # waveformリストを, qubexのPulseクラスのインスタンスに変換
+    waveform = Pulse(waveform)
 
-        # waveformリストを, qubexのPulseクラスのインスタンスに変換
-        waveform = Pulse(waveform)
+    # 波形シーケンスの辞書を作成
+    sequence = {qubit: waveform}
 
-        # 波形シーケンスの辞書を作成
-        sequence = {qubit: waveform}
-
-        # measureメソッドで測定を実行
-        res = exp.measure(
-            sequence = sequence, # 自作の波形シーケンスを指定
-            mode = "avg", # 単発射影測定の場合は"single"を指定
-            shots = 1024 # ショット数
-        ) # MeasureResultクラスを出力する
+    # measureメソッドで測定を実行
+    res = exp.measure(
+        sequence = sequence, # 自作の波形シーケンスを指定
+        mode = "avg", # 単発射影測定の場合は"single"を指定
+        shots = 1024 # ショット数
+    ) # MeasureResultクラスを出力する
 
 
     # 結果を整形してJSON形式で出力
