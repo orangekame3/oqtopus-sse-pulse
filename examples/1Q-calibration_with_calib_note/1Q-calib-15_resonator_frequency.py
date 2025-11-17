@@ -16,8 +16,8 @@ try:
     exp = Experiment(
         chip_id=chip_id,
         muxes=muxes,
-        params_dir="/sse/in/repo/ogawa/params", # <-- 自分のparamsディレクトリのパスに変更してください
-        calib_note_path="/sse/in/repo/ogawa/calib_note.json" # <-- 自分のcalib_noteファイルのパスに変更してください
+        params_dir="/sse/in/repo/ogawa/params",
+        calib_note_path="/sse/in/repo/ogawa/calib_note.json"
     )
 
     # デバイスに接続
@@ -36,22 +36,31 @@ try:
                 ps.add(target, Pulse([ampl] * int(T/2)))  # 長さT nsの矩形波パルス (2nsサンプリングなので2で割っている)
         return ps
 
-    # 掃引が必要な実験では、sweep_parameterメソッドを使用するのが便利.
-    res = exp.sweep_parameter(
-        sequence = rabi_sequence, # 引数に関数を指定
-        sweep_range = time_range, # 掃引時間リスト
-    )
+    resonator_frequency_list = 10.1975 + np.linspace(-0.1, 0.1, 31)  # 読み出し周波数掃引リスト (GHz)
+    result_dict = {}
 
+    for resonator_frequency in resonator_frequency_list:
 
-    # 結果を整形してJSON形式で出力
-    result = {
-        "time_range": res.data[qubit].sweep_range.tolist(),
-        "data_real": res.data[qubit].data.real.tolist(),
-        "data_imag": res.data[qubit].data.imag.tolist(),
-    }
+        # 掃引が必要な実験では、sweep_parameterメソッドを使用するのが便利.
+        res = exp.sweep_parameter(
+            sequence = rabi_sequence, # 引数に関数を指定
+            sweep_range = time_range, # 掃引時間リスト
+            frequencies={'R' + qubit: resonator_frequency},
+        )
+
+        # 結果を整形してJSON形式で出力
+        result = {
+            "time_range": res.data[qubit].sweep_range.tolist(),
+            "data_real": res.data[qubit].data.real.tolist(),
+            "data_imag": res.data[qubit].data.imag.tolist(),
+        }
+
+        result_dict[f"{resonator_frequency}"] = result
+
+    result_dict["resonator_frequency_list"] = resonator_frequency_list.tolist()
 
     # 結果の出力
-    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    print("payload=" + json.dumps(result_dict, ensure_ascii=False, separators=(",", ":")))
 
 # 例外処理
 except Exception as e:

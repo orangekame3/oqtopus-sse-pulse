@@ -9,8 +9,6 @@ import json
 chip_id='64Qv3'
 muxes=[9]
 qubit = 'Q36'
-qubit_frequency = 7.995820  # <-- ここを適切なqubit共鳴周波数に変更してください
-hpi_amplitude = 0.0273  # <-- ここを適切なhpi振幅に変更してください 
 
 
 print("start program")
@@ -19,29 +17,28 @@ try:
     exp = Experiment(
         chip_id=chip_id,
         muxes=muxes,
+        params_dir="/sse/in/repo/ogawa/params", # <-- 自分のparamsディレクトリのパスに変更してください
+        calib_note_path="/sse/in/repo/ogawa/calib_note.json" # <-- 自分のcalib_noteファイルのパスに変更してください
     )
 
     # デバイスに接続
     exp.connect()
 
-    # 一時的に駆動周波数をqubit共鳴周波数に設定
-    with exp.modified_frequencies({qubit: qubit_frequency}): 
+    # 空の波形リストを作成
+    waveform = []
 
-        # 空の波形リストを作成
-        waveform = []
+    # waveformリストを, qubexのPulseクラスのインスタンスに変換
+    waveform = Pulse(waveform)
 
-        # waveformリストを, qubexのPulseクラスのインスタンスに変換
-        waveform = Pulse(waveform)
+    # 波形シーケンスの辞書を作成
+    sequence = {qubit: waveform}
 
-        # 波形シーケンスの辞書を作成
-        sequence = {qubit: waveform}
-
-        # measureメソッドで測定を実行
-        res = exp.measure(
-            sequence = sequence, # 自作の波形シーケンスを指定
-            mode = "avg", # 単発射影測定の場合は"single"を指定
-            shots = 1 # ショット数
-        ) # MeasureResultクラスを出力する
+    # measureメソッドで測定を実行
+    res = exp.measure(
+        sequence = sequence, # 自作の波形シーケンスを指定
+        mode = "avg", # 単発射影測定の場合は"single"を指定
+        shots = 1 # ショット数
+    ) # MeasureResultクラスを出力する
 
 
     # 結果を整形してJSON形式で出力

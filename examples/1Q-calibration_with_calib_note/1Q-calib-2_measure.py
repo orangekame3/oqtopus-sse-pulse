@@ -17,6 +17,8 @@ try:
     exp = Experiment(
         chip_id=chip_id,
         muxes=muxes,
+        params_dir="/sse/in/repo/ogawa/params", # <-- 自分のparamsディレクトリのパスに変更してください
+        calib_note_path="/sse/in/repo/ogawa/calib_note.json" # <-- 自分のcalib_noteファイルのパスに変更してください
     )
 
     # デバイスに接続

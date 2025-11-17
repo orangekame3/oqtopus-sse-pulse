@@ -19,6 +19,8 @@ try:
     exp = Experiment(
         chip_id=chip_id,
         muxes=muxes,
+        params_dir="/sse/in/repo/ogawa/params", # <-- 自分のparamsディレクトリのパスに変更してください
+        calib_note_path="/sse/in/repo/ogawa/calib_note.json" # <-- 自分のcalib_noteファイルのパスに変更してください
     )
 
     # デバイスに接続
@@ -26,6 +28,9 @@ try:
 
     # 駆動周波数の離調
     detuning = 0.001 # 単位はGHz
+
+    # qubitの共鳴周波数を取得
+    qubit_frequency = exp.targets[qubit].frequency
 
     # 一時的に駆動周波数をqubit共鳴周波数+detuningに設定
     with exp.modified_frequencies({qubit: qubit_frequency + detuning}):
