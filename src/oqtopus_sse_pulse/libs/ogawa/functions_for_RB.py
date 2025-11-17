@@ -123,7 +123,7 @@ def make_rand_clifford_list_1Q(
 
     #rand_clifford_listに従って, identityからゲートを変換していく
     for clifford in rand_clifford_list:
-        compose_1Q(transform, clifford[1]) 
+        transform = compose_1Q(transform, clifford[1]) 
     
     # トータルのゲートの逆行列を求める
     for clifford in clifford_list_1Q:
