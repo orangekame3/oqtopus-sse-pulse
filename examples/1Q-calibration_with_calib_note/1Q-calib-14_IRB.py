@@ -15,8 +15,8 @@ qubit = 'Q36'
 # RBのパラメータ設定
 n_total_gate_list = np.arange(0, 1000, 100)  # 総クリフォード数のリスト
 n_repeat = 10  # 各総クリフォード数に対する繰り返し回数
-interleaved_gate = None  # Interleaved RB時に挿入するゲート. 通常のRBの場合はNoneを指定.
-# interleaved_gate = [['X90'], [['I', 'X', 'Z', 'Y'], [1, 1, 1, -1]]] # X90の場合.
+# interleaved_gate = None  # Interleaved RB時に挿入するゲート. 通常のRBの場合はNoneを指定.
+interleaved_gate = [['X90'], [['I', 'X', 'Z', 'Y'], [1, 1, 1, -1]]] # X90の場合.
 
 print("start program")
 try:
@@ -63,10 +63,13 @@ try:
                                 ps.add(target, hpi_pulse)
                             elif gate == 'Z90':
                                 ps.add(target, VirtualZ(np.pi/2))
+            
+            # sequence = {qubit: hpi_pulse.repeated(n_gate)}
                                
             # measureメソッドで測定を実行
             res = exp.measure(
                 sequence = ps, 
+                # sequence = sequence,
                 mode = "avg", 
                 shots = 1024,
             )
