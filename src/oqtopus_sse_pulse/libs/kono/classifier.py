@@ -24,8 +24,8 @@ class Classifier:
     ):
         try:
             # キーの確認
-            check_keys(input_dict=self.qubit_settings, required_keys=["chip_id", "muxes", "qubit"])
-            check_keys(input_dict=self.config_file_info, required_keys=["params_dir", "calib_note_path"])
+            check_keys(input_dict=qubit_settings, required_keys=["chip_id", "muxes", "qubit"])
+            check_keys(input_dict=config_file_info, required_keys=["params_dir", "calib_note_path"])
 
             self.qubit_settings = qubit_settings
             self.config_file_info = config_file_info
