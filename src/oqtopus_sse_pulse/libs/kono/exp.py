@@ -7,7 +7,7 @@ import numpy as np
 import json
 
 import time
-from concurrent.futures import ThreadPoolExecutor, process
+# from concurrent.futures import ThreadPoolExecutor, process
 
 from .dictionary import check_keys
 from .classifier import Classifier
@@ -63,7 +63,8 @@ def measure_state_single_qubit(
                 )
 
         # 波形シーケンスの辞書を作成
-        sequence = {qubit: hpi_pulse.repeated(2)}
+        sequence = {qubit: hpi_pulse.repeated(2), "Q37": hpi_pulse.repeated(2)}
+        # sequence = {qubit: hpi_pulse.repeated(2)}
 
         # 開始時刻を取得
         start_time = time.time()
@@ -87,6 +88,13 @@ def measure_state_single_qubit(
             "kerneled_data_real": (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
             "kerneled_data_imag": (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
         }
+        result_Q37 = {
+            "time_range": (np.arange(len(res.data["Q37"].raw)) * 8).tolist(),  # 読み出しのサンプリング間隔は8ns
+            "raw_data_real": res.data["Q37"].raw.real.tolist(),
+            "raw_data_imag": res.data["Q37"].raw.imag.tolist(),
+            "kerneled_data_real": (res.data["Q37"].kerneled.real / len(res.data["Q37"].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
+            "kerneled_data_imag": (res.data["Q37"].kerneled.imag / len(res.data["Q37"].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
+        }
 
         # 結果の出力
         state = classifier(result["kerneled_data_real"], result["kerneled_data_imag"])
@@ -95,6 +103,10 @@ def measure_state_single_qubit(
             f"measurement_time_sec_{qubit}": end_time - start_time,
             # 例: usレベルで表示する
             f"start_time_{qubit}": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
+            "measured_state_Q37": classifier(result_Q37["kerneled_data_real"], result_Q37["kerneled_data_imag"]),
+            "measurement_time_sec_Q37": end_time - start_time,
+            # 例: usレベルで表示する
+            "start_time_Q37": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
         }
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
         # return result
