@@ -41,7 +41,8 @@ def measure_state_single_qubit(
         # qubexのExperimentクラスのインスタンスを作成
         exp = Experiment(
             chip_id=qubit_settings.get("chip_id", "64Qv3"),
-            muxes=qubit_settings.get("muxes", [9]),
+            muxes=[9, 10],
+            # muxes=qubit_settings.get("muxes", [9]),
             params_dir=config_file_info.get("params_dir", "/sse/in/repo/kono/params"),
             calib_note_path=config_file_info.get("calib_note_path", "/sse/in/repo/kono/calib_note.json")
         )
@@ -63,7 +64,7 @@ def measure_state_single_qubit(
                 )
 
         # 波形シーケンスの辞書を作成
-        sequence = {qubit: hpi_pulse.repeated(2), "Q37": hpi_pulse.repeated(2)}
+        sequence = {qubit: hpi_pulse.repeated(2), "Q40": hpi_pulse.repeated(2)}
         # sequence = {qubit: hpi_pulse.repeated(2)}
 
         # 開始時刻を取得
@@ -88,12 +89,12 @@ def measure_state_single_qubit(
             "kerneled_data_real": (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
             "kerneled_data_imag": (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
         }
-        result_Q37 = {
-            "time_range": (np.arange(len(res.data["Q37"].raw)) * 8).tolist(),  # 読み出しのサンプリング間隔は8ns
-            "raw_data_real": res.data["Q37"].raw.real.tolist(),
-            "raw_data_imag": res.data["Q37"].raw.imag.tolist(),
-            "kerneled_data_real": (res.data["Q37"].kerneled.real / len(res.data["Q37"].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
-            "kerneled_data_imag": (res.data["Q37"].kerneled.imag / len(res.data["Q37"].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
+        result_Q40 = {
+            "time_range": (np.arange(len(res.data["Q40"].raw)) * 8).tolist(),  # 読み出しのサンプリング間隔は8ns
+            "raw_data_real": res.data["Q40"].raw.real.tolist(),
+            "raw_data_imag": res.data["Q40"].raw.imag.tolist(),
+            "kerneled_data_real": (res.data["Q40"].kerneled.real / len(res.data["Q40"].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
+            "kerneled_data_imag": (res.data["Q40"].kerneled.imag / len(res.data["Q40"].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
         }
 
         # 結果の出力
@@ -105,12 +106,12 @@ def measure_state_single_qubit(
             f"measurement_time_sec_{qubit}": end_time - start_time,
             # 例: usレベルで表示する
             f"start_time_{qubit}": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
-            "measured_state_Q37": classifier(result_Q37["kerneled_data_real"], result_Q37["kerneled_data_imag"]),
-            "kerneled_data_real_Q37": result_Q37["kerneled_data_real"],
-            "kerneled_data_imag_Q37": result_Q37["kerneled_data_imag"],
-            "measurement_time_sec_Q37": end_time - start_time,
+            "measured_state_Q40": classifier(result_Q40["kerneled_data_real"], result_Q40["kerneled_data_imag"]),
+            "kerneled_data_real_Q40": result_Q40["kerneled_data_real"],
+            "kerneled_data_imag_Q40": result_Q40["kerneled_data_imag"],
+            "measurement_time_sec_Q40": end_time - start_time,
             # 例: usレベルで表示する
-            "start_time_Q37": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
+            "start_time_Q40": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
         }
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
         # return result
