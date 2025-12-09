@@ -4,6 +4,7 @@ from qubex.experiment import Experiment
 from qubex.pulse import Pulse, FlatTop
 
 import numpy as np
+from copy import deepcopy
 
 from .dictionary import check_keys
 
@@ -30,6 +31,8 @@ class Classifier:
             self.qubit_settings = qubit_settings
             self.config_file_info = config_file_info
 
+            print(f"=== {self.qubit_settings.get('qubit', 'Q36')}: Classifier Calibration Start ===")
+
             result_g = self.measure_g_state()
             result_e = self.measure_e_state()
             # 測定で得られた全データ
@@ -46,6 +49,8 @@ class Classifier:
             self.slope = -(x_e - x_g) / (y_e - y_g)
             self.intercept = 1 / 2 * (x_e ** 2 - x_g ** 2 + y_e ** 2 - y_g ** 2) / (y_e - y_g)
             self.sign_e = 1 if y_e - (self.slope * x_e + self.intercept) > 0 else -1
+
+            print(f"=== {self.qubit_settings.get('qubit', 'Q36')}: Classifier Calibration End ===")
         except Exception as e:
             print("Exception:", e)
             traceback.print_exc()
@@ -61,7 +66,7 @@ class Classifier:
             return 0
             
     def measure_g_state(self):
-        print("start g state measurement")
+        print(f"=== {self.qubit_settings.get('qubit', 'Q36')}: start g state measurement ===")
         try:
             qubit = self.qubit_settings.get("qubit", "Q36")
 
@@ -110,10 +115,10 @@ class Classifier:
 
         # 終了処理
         finally:
-            print("end g state measurement")
+            print(f"=== {self.qubit_settings.get('qubit', 'Q36')}: end g state measurement ===")
 
     def measure_e_state(self):
-        print("start e state measurement")
+        print(f"=== {self.qubit_settings.get('qubit', 'Q36')}: start e state measurement ===")
         try:
             qubit = self.qubit_settings.get("qubit", "Q36")
 
@@ -169,4 +174,21 @@ class Classifier:
 
         # 終了処理
         finally:
-            print("end e state measurement")
+            print(f"=== {self.qubit_settings.get('qubit', 'Q36')}: end e state measurement ===")
+
+
+def initizialize_classifiers(
+    qubit_settings: dict,
+    config_file_info: dict
+) -> dict[str, Classifier]:
+    classifiers = {}
+    qubits = qubit_settings.get("qubit", ["Q36"])
+    for qubit in qubits:
+        qubit_settings_temp = deepcopy(qubit_settings)
+        qubit_settings_temp["qubit"] = qubit
+        clf = Classifier(
+            qubit_settings=qubit_settings_temp,
+            config_file_info=config_file_info
+        )
+        classifiers[qubit] = clf
+    return classifiers
