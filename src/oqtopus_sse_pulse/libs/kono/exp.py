@@ -1,4 +1,5 @@
 import traceback
+from datetime import datetime
 
 from qubex.experiment import Experiment
 from qubex.pulse import FlatTop
@@ -92,10 +93,11 @@ def measure_state_single_qubit(
         result = {
             f"measured_state_{qubit}": state,
             f"measurement_time_sec_{qubit}": end_time - start_time,
-            f"start_time_{qubit}": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
+            # 例: usレベルで表示する
+            f"start_time_{qubit}": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
         }
-        # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
-        return result
+        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+        # return result
 
 
     # 例外処理
@@ -130,21 +132,21 @@ def measure_state_multi_qubits(qubit_info: list[dict]):
             }
         ]
     
-    # for info in qubit_info:
-    #     measure_state_single_qubit(
-    #         classifier=info.get("classifier"),
-    #         qubit_settings=info.get("qubit_settings"),
-    #         config_file_info=info.get("config_file_info")
-    #     )
-    with ThreadPoolExecutor() as executor:
-        results = list(
-            executor.map(
-                measure_state_single_qubit, 
-                [info.get("classifier") for info in qubit_info],
-                [info.get("qubit_settings") for info in qubit_info],
-                [info.get("config_file_info") for info in qubit_info]
-            )
+    for info in qubit_info:
+        measure_state_single_qubit(
+            classifier=info.get("classifier"),
+            qubit_settings=info.get("qubit_settings"),
+            config_file_info=info.get("config_file_info")
         )
+    # with ThreadPoolExecutor() as executor:
+    #     results = list(
+    #         executor.map(
+    #             measure_state_single_qubit, 
+    #             [info.get("classifier") for info in qubit_info],
+    #             [info.get("qubit_settings") for info in qubit_info],
+    #             [info.get("config_file_info") for info in qubit_info]
+    #         )
+    #     )
     
-    for result in results:
-        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    # for result in results:
+    #     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
