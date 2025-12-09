@@ -91,6 +91,7 @@ def measure_qubit_states(
         # 結果を整形してJSON形式で出力
         result = {}
         result["state"] = {}
+        result["raw_data"] = {}
         for qubit in qubit_settings["qubit"]:
             # result = {
             #     "time_range": (np.arange(len(res.data[qubit].raw)) * 8).tolist(),  # 読み出しのサンプリング間隔は8ns
@@ -99,10 +100,15 @@ def measure_qubit_states(
             #     "kerneled_data_real": (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
             #     "kerneled_data_imag": (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
             # }
-            kerneled_data_real = res.data[qubit].kerneled.real / len(res.data[qubit].raw)  # kerneledデータは合計値なので, 平均値に変換
-            kerneled_data_imag = res.data[qubit].kerneled.imag / len(res.data[qubit].raw)  # kerneledデータは合計値なので, 平均値に変換
+            kerneled_data_real = (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist()  # kerneledデータは合計値なので, 平均値に変換
+            kerneled_data_imag = (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist()  # kerneledデータは合計値なので, 平均値に変換
             state = classifier[qubit](kerneled_data_real, kerneled_data_imag)
+            
             result["state"][qubit] = state
+            result["raw_data"][qubit] = {
+                "kerneled_data_real": kerneled_data_real,
+                "kerneled_data_imag": kerneled_data_imag,
+            }
 
         result["time"] = {
             "start_time": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
