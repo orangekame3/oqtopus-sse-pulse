@@ -42,8 +42,7 @@ def measure_qubit_states(
         # qubexのExperimentクラスのインスタンスを作成
         exp = Experiment(
             chip_id=qubit_settings.get("chip_id", "64Qv3"),
-            muxes=[9, 10],
-            # muxes=qubit_settings.get("muxes", [9]),
+            muxes=qubit_settings.get("muxes", [9]),
             params_dir=config_file_info.get("params_dir", "/sse/in/repo/kono/params"),
             calib_note_path=config_file_info.get("calib_note_path", "/sse/in/repo/kono/calib_note.json")
         )
