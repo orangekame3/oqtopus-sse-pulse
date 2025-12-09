@@ -5,11 +5,13 @@ from qubex.pulse import FlatTop
 import numpy as np
 import json
 
+import time
+
 from .dictionary import check_keys
 from .classifier import Classifier
 
 
-def measure_state(
+def measure_state_single_qubit(
         classifier: Classifier, 
         qubit_settings: dict = {
             "chip_id": "64Qv3",
@@ -61,12 +63,19 @@ def measure_state(
         # 波形シーケンスの辞書を作成
         sequence = {qubit: hpi_pulse.repeated(2)}
 
+        # 開始時刻を取得
+        start_time = time.time()
+
         # measureメソッドで測定を実行
         res = exp.measure(
             sequence = sequence, # 自作の波形シーケンスを指定
             mode = "avg", # 単発射影測定の場合は"single"を指定
-            shots = 1024 # ショット数
+            shots = 1 # ショット数
+            # shots = 1024 # ショット数
         ) # MeasureResultクラスを出力する
+
+        # 終了時刻を取得
+        end_time = time.time()
 
         # 結果を整形してJSON形式で出力
         result = {
@@ -79,7 +88,11 @@ def measure_state(
 
         # 結果の出力
         state = classifier(result["kerneled_data_real"], result["kerneled_data_imag"])
-        result["measured_state"] = state
+        result = {
+            f"measured_state_{qubit}": state,
+            f"measurement_time_sec_{qubit}": end_time - start_time,
+            f"start_time_{qubit}": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
+        }
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
 
@@ -91,3 +104,35 @@ def measure_state(
     # 終了処理
     finally:
         print("end state measurement")
+
+def measure_state_multi_qubits(qubit_info: list[dict]):
+    if qubit_info is None:
+        qubit_settings: dict = {
+                "chip_id": "64Qv3",
+                "muxes": [9],
+                "qubit": "Q36"
+            }
+        config_file_info: dict = {
+            "params_dir": "/sse/in/repo/kono/params",
+            "calib_note_path": "/sse/in/repo/kono/calib_note.json"
+        }
+        classifier = Classifier(
+            qubit_settings=qubit_settings,
+            config_file_info=config_file_info
+        )
+        qubit_info = [
+            {
+                "qubit_settings": qubit_settings,
+                "config_file_info": config_file_info,
+                "classifier": classifier
+            }
+        ]
+    
+    for info in qubit_info:
+        measure_state_single_qubit(
+            classifier=info.get("classifier"),
+            qubit_settings=info.get("qubit_settings"),
+            config_file_info=info.get("config_file_info")
+        )
+
+    pass
