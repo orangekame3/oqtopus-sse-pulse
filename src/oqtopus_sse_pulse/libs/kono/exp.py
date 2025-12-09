@@ -100,10 +100,14 @@ def measure_state_single_qubit(
         state = classifier(result["kerneled_data_real"], result["kerneled_data_imag"])
         result = {
             f"measured_state_{qubit}": state,
+            f"kerneled_data_real_{qubit}": result["kerneled_data_real"],
+            f"kerneled_data_imag_{qubit}": result["kerneled_data_imag"],
             f"measurement_time_sec_{qubit}": end_time - start_time,
             # 例: usレベルで表示する
             f"start_time_{qubit}": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
             "measured_state_Q37": classifier(result_Q37["kerneled_data_real"], result_Q37["kerneled_data_imag"]),
+            "kerneled_data_real_Q37": result_Q37["kerneled_data_real"],
+            "kerneled_data_imag_Q37": result_Q37["kerneled_data_imag"],
             "measurement_time_sec_Q37": end_time - start_time,
             # 例: usレベルで表示する
             "start_time_Q37": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
