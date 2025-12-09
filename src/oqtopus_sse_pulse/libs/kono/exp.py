@@ -3,6 +3,7 @@ import traceback
 from qubex.experiment import Experiment
 from qubex.pulse import FlatTop
 import numpy as np
+import json
 
 from .dictionary import check_keys
 from .classifier import Classifier
@@ -77,9 +78,10 @@ def measure_state(
         }
 
         # 結果の出力
-        # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
         state = classifier(result["kerneled_data_real"], result["kerneled_data_imag"])
-        return state
+        result["measured_state"] = state
+        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+
 
     # 例外処理
     except Exception as e:
