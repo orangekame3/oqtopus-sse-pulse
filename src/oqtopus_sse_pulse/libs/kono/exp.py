@@ -25,6 +25,8 @@ def measure_qubit_states(
         classifier: dict = {
             "Q36": Classifier()
         },
+        num_shots: int = 1,
+        delay_time: float = 1.0
     ):
 
     try:
@@ -73,49 +75,55 @@ def measure_qubit_states(
             sequence[qubit] = hpi_pulse.repeated(2)
         # sequence = {qubit: hpi_pulse.repeated(2)}
 
-        # 開始時刻を取得
-        start_time = time.time()
+        for _ in range(num_shots):
+            # 開始時刻を取得
+            start_time = time.time()
 
-        # measureメソッドで測定を実行
-        res = exp.measure(
-            sequence = sequence, # 自作の波形シーケンスを指定
-            mode = "avg", # 単発射影測定の場合は"single"を指定
-            shots = 1 # ショット数
-            # shots = 1024 # ショット数
-        ) # MeasureResultクラスを出力する
+            # measureメソッドで測定を実行
+            res = exp.measure(
+                sequence = sequence, # 自作の波形シーケンスを指定
+                mode = "avg", # 単発射影測定の場合は"single"を指定
+                shots = 1 # ショット数
+                # shots = 1024 # ショット数
+            ) # MeasureResultクラスを出力する
 
-        # 終了時刻を取得
-        end_time = time.time()
+            # 終了時刻を取得
+            end_time = time.time()
 
-        # 結果を整形してJSON形式で出力
-        result = {}
-        result["state"] = {}
-        result["raw_data"] = {}
-        for qubit in qubit_settings["qubit"]:
-            # result = {
-            #     "time_range": (np.arange(len(res.data[qubit].raw)) * 8).tolist(),  # 読み出しのサンプリング間隔は8ns
-            #     "raw_data_real": res.data[qubit].raw.real.tolist(),
-            #     "raw_data_imag": res.data[qubit].raw.imag.tolist(),
-            #     "kerneled_data_real": (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
-            #     "kerneled_data_imag": (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
-            # }
-            kerneled_data_real = (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist()  # kerneledデータは合計値なので, 平均値に変換
-            kerneled_data_imag = (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist()  # kerneledデータは合計値なので, 平均値に変換
-            state = classifier[qubit](kerneled_data_real, kerneled_data_imag)
-            
-            result["state"][qubit] = state
-            result["raw_data"][qubit] = {
-                "kerneled_data_real": kerneled_data_real,
-                "kerneled_data_imag": kerneled_data_imag,
+            # 結果を整形してJSON形式で出力
+            result = {}
+            result["state"] = {}
+            result["raw_data"] = {}
+            for qubit in qubit_settings["qubit"]:
+                # result = {
+                #     "time_range": (np.arange(len(res.data[qubit].raw)) * 8).tolist(),  # 読み出しのサンプリング間隔は8ns
+                #     "raw_data_real": res.data[qubit].raw.real.tolist(),
+                #     "raw_data_imag": res.data[qubit].raw.imag.tolist(),
+                #     "kerneled_data_real": (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
+                #     "kerneled_data_imag": (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
+                # }
+                kerneled_data_real = (res.data[qubit].kerneled.real / len(res.data[qubit].raw)).tolist()  # kerneledデータは合計値なので, 平均値に変換
+                kerneled_data_imag = (res.data[qubit].kerneled.imag / len(res.data[qubit].raw)).tolist()  # kerneledデータは合計値なので, 平均値に変換
+                state = classifier[qubit](kerneled_data_real, kerneled_data_imag)
+                
+                result["state"][qubit] = state
+                result["raw_data"][qubit] = {
+                    "kerneled_data_real": kerneled_data_real,
+                    "kerneled_data_imag": kerneled_data_imag,
+                }
+
+            result["time"] = {
+                "start_time": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
+                "end_time": datetime.fromtimestamp(end_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
+                "measurement_time": end_time - start_time
             }
+            print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
-        result["time"] = {
-            "start_time": datetime.fromtimestamp(start_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
-            "end_time": datetime.fromtimestamp(end_time).strftime('%Y-%m-%d %H:%M:%S.%f'),
-            "measurement_time": end_time - start_time
-        }
-        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
-        # return result
+            # 次の実行までの残り時間を計算
+            next_time = start_time + delay_time
+            sleep_time = next_time - time.time()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
 
     # 例外処理
