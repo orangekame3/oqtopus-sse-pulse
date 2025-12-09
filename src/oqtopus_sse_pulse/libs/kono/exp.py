@@ -6,6 +6,7 @@ import numpy as np
 import json
 
 import time
+from concurrent.futures import ThreadPoolExecutor, process
 
 from .dictionary import check_keys
 from .classifier import Classifier
@@ -93,7 +94,8 @@ def measure_state_single_qubit(
             f"measurement_time_sec_{qubit}": end_time - start_time,
             f"start_time_{qubit}": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
         }
-        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+        # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+        return result
 
 
     # 例外処理
@@ -128,11 +130,21 @@ def measure_state_multi_qubits(qubit_info: list[dict]):
             }
         ]
     
-    for info in qubit_info:
-        measure_state_single_qubit(
-            classifier=info.get("classifier"),
-            qubit_settings=info.get("qubit_settings"),
-            config_file_info=info.get("config_file_info")
+    # for info in qubit_info:
+    #     measure_state_single_qubit(
+    #         classifier=info.get("classifier"),
+    #         qubit_settings=info.get("qubit_settings"),
+    #         config_file_info=info.get("config_file_info")
+    #     )
+    with ThreadPoolExecutor() as executor:
+        results = list(
+            executor.map(
+                measure_state_single_qubit, 
+                [info.get("classifier") for info in qubit_info],
+                [info.get("qubit_settings") for info in qubit_info],
+                [info.get("config_file_info") for info in qubit_info]
+            )
         )
-
-    pass
+    
+    for result in results:
+        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
