@@ -3,7 +3,6 @@ from datetime import datetime
 
 from qubex.experiment import Experiment
 from qubex.pulse import FlatTop
-import numpy as np
 import json
 
 import time
