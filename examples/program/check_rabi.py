@@ -4,14 +4,14 @@ from qubex.experiment import Experiment
 
 print("start program")
 try:
-    username = "your_name"
+    username = "miyanaga"
     exp = Experiment(
         chip_id="64Qv2",
-        muxes=[2],
+        muxes=[9],
         params_dir=f"/sse/in/repo/{username}/params"
     )
     exp.connect()
-    res = exp.check_rabi(targets="Q08")
+    res = exp.check_rabi(targets="Q36")
     result: dict = {"mode": "", "data": {}}
     for qubit, data in res.data.items():
         result["data"][qubit] = {
