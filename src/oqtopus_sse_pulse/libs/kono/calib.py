@@ -1,6 +1,5 @@
 import qubex as qx
 import json
-import yaml
 
 
 def calibrate(ex: qx.Experiment):
@@ -38,4 +37,4 @@ def calibrate(ex: qx.Experiment):
         }
     }
     result: dict = {"props": props}
-    print("payload=" + yaml.dump(result, default_flow_style=False))
+    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
