@@ -8,8 +8,11 @@ import json
 # 使用するqubitの設定
 chip_id='64Qv3'
 muxes=[9,10]
-qubit = ['Q36','Q37','Q38','Q39','Q40']
-#qubit = ['Q36']
+qubit = ['Q36']
+#qubit = ['Q36', 'Q37']
+#qubit = ['Q36','Q37','Q38','Q39','Q40']
+time_idle = 500  # 各hpiパルス間の待ち時間(ns)
+counts_mes = 100  # 測定回数
 
 print("start program")
 try:
@@ -33,10 +36,10 @@ try:
 #    time_list = np.full(50, 2000)  # すべて2000ns固定
 #    time_list = np.full(50, 1000)  # すべて1000ns固定
 
-    time_idle = 1000  # 各hpiパルス間の待ち時間(ns)
-    counts_mes = 10000  # 測定回数
+#    time_idle = 1000  # 各hpiパルス間の待ち時間(ns)
+#    counts_mes = 20  # 測定回数
     
-    time_list = np.full(counts_mes, time_idle)  # すべて1000ns固定
+#    time_list = np.full(counts_mes, time_idle)  # すべて1000ns固定
 
     # 各qubitに対応するhpiパルスを作成
     hpi_pulse = {}
@@ -93,6 +96,7 @@ try:
 
     # measureメソッドで測定を実行
     res = exp.measure(
+#        interval = 150*1000*2,
         sequence = sequence(time_idle), # 自作の波形シーケンスを指定
         mode = "single", # 単発射影測定の場合は"single"を指定
         shots = counts_mes # ショット数
@@ -112,7 +116,9 @@ try:
 #            "raw_data_imag": res.data[target].raw.imag.tolist(),
 #            "time_range": (np.arange(len(res.data[target].raw)) * 8).tolist(),  # 読み出しのサンプリング間隔は8ns
 #            "time_list": time_list.tolist(),
-            "time_list": (np.arange(len(res.data[target].raw)) * time_list).tolist(),  # 読み出しのサンプリング間隔は8ns
+#            "time_list": (np.arange(len(res.data[target].raw)) * time_idle).tolist(),  # 読み出しのサンプリング間隔は8ns
+            "time_list": (np.arange(len(res.data[target].raw)) * (time_idle if time_idle != 0 else 1)).tolist(),  # 読み出しのサンプリング間隔は8ns
+#            "time_list": (np.arange(len(res.data[target].raw))).tolist(),  # 読み出しのサンプリング間隔は8ns
             # "data_real": (res.data[target].kerneled.real / len(res.data[target].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
             # "data_imag": (res.data[target].kerneled.imag / len(res.data[target].raw)).tolist(),  # kerneledデータは合計値なので, 平均値に変換
             "data_real": res.data[target].raw.real.tolist(),
