@@ -6,13 +6,12 @@ def calibrate(ex: qx.Experiment):
     # calibrate
     print(ex.system_manager._config_loader._props_dict)
     ex.obtain_rabi_params(plot=False)
-    ex.calibrate_control_frequency(plot=False)
+    ex.calibrate_hpi_pulse(plot=False)
+    t1 = ex.t1_experiment(plot=False)
+    t1 = t1.data
+    t2 = ex.t2_experiment(plot=False)
+    t2 = t2.data
     print(ex.system_manager._config_loader._props_dict)
-    # ex.calibrate_hpi_pulse(plot=False)
-    # t1 = ex.t1_experiment(plot=False)
-    # t1 = t1.data
-    # t2 = ex.t2_experiment(plot=False)
-    # t2 = t2.data
     # cls = ex.build_classifier(plot=False)
 
     # # put results into payload
