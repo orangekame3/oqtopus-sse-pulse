@@ -2,7 +2,7 @@ import qubex as qx
 import json
 
 
-def calibrate(ex: qx.Experiment) -> dict:
+def calibrate(ex: qx.Experiment):
     # calibrate
     print(ex.system_manager._config_loader._params_dict)
     ex.obtain_rabi_params(plot=False)
