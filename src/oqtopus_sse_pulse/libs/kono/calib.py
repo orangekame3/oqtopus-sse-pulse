@@ -6,6 +6,7 @@ def calibrate(ex: qx.Experiment):
     # calibrate
     print(ex.system_manager._config_loader._props_dict)
     ex.obtain_rabi_params(plot=False)
+    ex.calibrate_control_frequency(plot=False)
     print(ex.system_manager._config_loader._props_dict)
     # ex.calibrate_hpi_pulse(plot=False)
     # t1 = ex.t1_experiment(plot=False)
