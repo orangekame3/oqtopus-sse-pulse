@@ -56,7 +56,7 @@ def calibrate(ex: CustomExperiment):
     t1 = t1.data                                                        # store results of T1 measurement
     t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
     t2 = t2.data                                                        # store results of T2 measurement
-    cls = ex.build_classifier(plot=False)                               # ここまでいけた
+    cls = ex.build_classifier(plot=False)                               # build classifiers
 
     # summarize results
     calib_note = ex.calib_note
@@ -105,5 +105,3 @@ def calibrate(ex: CustomExperiment):
     # output
     result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
-
-    return cls["classifiers"]
