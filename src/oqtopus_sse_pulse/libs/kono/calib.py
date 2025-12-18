@@ -86,24 +86,24 @@ def calibrate(ex: CustomExperiment):
         "average_readout_fidelity": cls["average_readout_fidelity"],
     }
 
-    # raw_data: dict = {
-    #     "t1": {
-    #         key: {
-    #             "data": t1[key].data, 
-    #             "sweep_range": t1[key].sweep_range,
-    #         } for key in t1
-    #     },
-    #     "t2": {
-    #         key: {
-    #             "data": t2[key].data, 
-    #             "sweep_range": t2[key].sweep_range,
-    #         } for key in t2
-    #     },
-    #     "classifiers": cls["data"]                                             # raw data used for building classifiers
-    # }
+    raw_data: dict = {
+        # "t1": {
+        #     key: {
+        #         "data": t1[key].data, 
+        #         "sweep_range": t1[key].sweep_range,
+        #     } for key in t1
+        # },
+        # "t2": {
+        #     key: {
+        #         "data": t2[key].data, 
+        #         "sweep_range": t2[key].sweep_range,
+        #     } for key in t2
+        # },
+        # "classifiers": cls["data"]                                             # raw data used for building classifiers
+    }
 
-    # # output
-    # result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
-    # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    # output
+    result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
+    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
-    # return cls["classifiers"]
+    return cls["classifiers"]
