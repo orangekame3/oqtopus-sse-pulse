@@ -55,8 +55,8 @@ def calibrate(ex: CustomExperiment):
     t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
     t1 = t1.data                                                        # store results of T1 measurement
     t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
-    t2 = t2.data                                                        # store results of T2 measurement
-    # cls = ex.build_classifier(plot=False)
+    t2 = t2.data                                                        # store results of T2 measurement   # ここまでいけた
+    cls = ex.build_classifier(plot=False)
 
     # # summarize results
     # calib_note = ex.calib_note
