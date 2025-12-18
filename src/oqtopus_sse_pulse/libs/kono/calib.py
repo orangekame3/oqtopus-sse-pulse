@@ -61,7 +61,6 @@ def calibrate(ex: CustomExperiment):
     # summarize results
     calib_note = ex.calib_note
     calib_note_dict = calib_note._dict if calib_note else None
-    result: dict = {"calib_note": calib_note_dict}
 
     props = {
         "qubit_frequencies": control_frequencies,
@@ -86,26 +85,25 @@ def calibrate(ex: CustomExperiment):
         "readout_fidelities": cls["readout_fidelities"],
         "average_readout_fidelity": cls["average_readout_fidelity"],
     }
-    result["props"] = props
 
-    raw_data: dict = {
-        "t1": {
-            key: {
-                "data": t1[key].data, 
-                "sweep_range": t1[key].sweep_range,
-            } for key in t1
-        },
-        "t2": {
-            key: {
-                "data": t2[key].data, 
-                "sweep_range": t2[key].sweep_range,
-            } for key in t2
-        },
-        "classifiers": cls["data"]                                             # raw data used for building classifiers
-    }
-    result["raw_data"] = raw_data
+    # raw_data: dict = {
+    #     "t1": {
+    #         key: {
+    #             "data": t1[key].data, 
+    #             "sweep_range": t1[key].sweep_range,
+    #         } for key in t1
+    #     },
+    #     "t2": {
+    #         key: {
+    #             "data": t2[key].data, 
+    #             "sweep_range": t2[key].sweep_range,
+    #         } for key in t2
+    #     },
+    #     "classifiers": cls["data"]                                             # raw data used for building classifiers
+    # }
 
-    # output
-    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    # # output
+    # result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
+    # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
     # return cls["classifiers"]
