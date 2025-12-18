@@ -96,4 +96,4 @@ def calibrate(ex: CustomExperiment):
     # output
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
-    return cls["classifier"]
+    return cls["classifiers"]
