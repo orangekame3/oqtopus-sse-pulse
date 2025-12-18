@@ -99,9 +99,9 @@ class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
                     "sweep_range": t2[key].sweep_range.tolist(),
                 } for key in t2
             },
-            "classifiers": {
-                key: cls["data"][key].tolist() for key in cls["data"]         # raw data used for building classifiers
-            }
+            # "classifiers": {
+            #     key: cls["data"][key].tolist() for key in cls["data"]         # raw data used for building classifiers
+            # }
         }
 
         # output
