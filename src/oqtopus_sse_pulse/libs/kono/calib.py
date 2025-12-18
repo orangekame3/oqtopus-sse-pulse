@@ -88,10 +88,22 @@ def calibrate(ex: CustomExperiment):
     }
     result["props"] = props
 
-    misc: dict = {
-        "data": cls["data"]                                             # raw data used for building classifiers
+    raw_data: dict = {
+        "t1": {
+            key: {
+                "data": t1[key].data, 
+                "sweep_range": t1[key].sweep_range,
+            } for key in t1
+        },
+        "t2": {
+            key: {
+                "data": t2[key].data, 
+                "sweep_range": t2[key].sweep_range,
+            } for key in t2
+        },
+        "classifiers": cls["data"]                                             # raw data used for building classifiers
     }
-    result["misc"] = misc
+    result["raw_data"] = raw_data
 
     # output
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
