@@ -45,6 +45,7 @@ class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
     # diffs from qx.Experiment are below:
     # - inherit the custom calibrate_control_frequency() function by extending CustomCharacterizationMixin
     # - implement autocalibrate() to run calibration on server side, not interactively.
+    # - classifiers are stored in self._classifiers after autocalibrate()
     def autocalibrate(self) -> None:
         # start calibration
         self.obtain_rabi_params(plot=False)                                   # Rabi measurement
@@ -106,6 +107,9 @@ class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
         # output
         result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+
+        # store classifiers
+        self._classifiers = self.measurement._classifiers
 
 
 # def calibrate(ex: CustomExperiment):
