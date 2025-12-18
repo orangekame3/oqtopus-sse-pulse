@@ -42,66 +42,128 @@ class CustomCharacterizationMixin(CharacterizationMixin):
 
 
 class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
-    # inherit the custom calibrate_control_frequency function by extending CustomCharacterizationMixin
-    pass
+    # diffs from qx.Experiment are below:
+    # - inherit the custom calibrate_control_frequency() function by extending CustomCharacterizationMixin
+    # - implement autocalibrate() to run calibration on server side, not interactively.
+    def autocalibrate(self) -> None:
+        # start calibration
+        self.obtain_rabi_params(plot=False)                                   # Rabi measurement
+        control_frequencies = self.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
+        self.modified_frequencies(control_frequencies)                        # update qubit frequencies
+        self.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
+        t1 = self.t1_experiment(plot=False)                                   # T1 measurement
+        t1 = t1.data                                                          # store results of T1 measurement
+        t2 = self.t2_experiment(plot=False)                                   # T2 measurement
+        t2 = t2.data                                                          # store results of T2 measurement
+        cls = self.build_classifier(plot=False)                               # build classifiers
+
+        # summarize results
+        calib_note = self.calib_note
+        calib_note_dict = calib_note._dict if calib_note else None
+
+        props = {
+            "qubit_frequencies": control_frequencies,
+            "t1": {
+                key: t1[key].t1 for key in t1
+            }, 
+            "t1_err": {
+                key: t1[key].t1_err for key in t1
+            },
+            "t1_r2": {
+                key: t1[key].r2 for key in t1
+            },
+            "t2": {
+                key: t2[key].t2 for key in t2
+            },
+            "t2_err": {
+                key: t2[key].t2_err for key in t2
+            },
+            "t2_r2": {
+                key: t2[key].r2 for key in t2
+            },
+            "readout_fidelities": cls["readout_fidelities"],
+            "average_readout_fidelity": cls["average_readout_fidelity"],
+        }
+
+        raw_data: dict = {
+            "t1": {
+                key: {
+                    "data": t1[key].data.tolist(), 
+                    "sweep_range": t1[key].sweep_range.tolist(),
+                } for key in t1
+            },
+            "t2": {
+                key: {
+                    "data": t2[key].data.tolist(), 
+                    "sweep_range": t2[key].sweep_range.tolist(),
+                } for key in t2
+            },
+            "classifiers": {
+                key: cls["data"][key].tolist() for key in cls["data"]         # raw data used for building classifiers
+            }
+        }
+
+        # output
+        result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
+        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
 
-def calibrate(ex: CustomExperiment):
-    # start calibration
-    ex.obtain_rabi_params(plot=False)                                   # Rabi measurement
-    control_frequencies = ex.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
-    ex.modified_frequencies(control_frequencies)                        # update qubit frequencies
-    ex.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
-    t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
-    t1 = t1.data                                                        # store results of T1 measurement
-    t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
-    t2 = t2.data                                                        # store results of T2 measurement
-    cls = ex.build_classifier(plot=False)                               # build classifiers
+# def calibrate(ex: CustomExperiment):
+#     # start calibration
+#     ex.obtain_rabi_params(plot=False)                                   # Rabi measurement
+#     control_frequencies = ex.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
+#     ex.modified_frequencies(control_frequencies)                        # update qubit frequencies
+#     ex.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
+#     t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
+#     t1 = t1.data                                                        # store results of T1 measurement
+#     t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
+#     t2 = t2.data                                                        # store results of T2 measurement
+#     cls = ex.build_classifier(plot=False)                               # build classifiers
 
-    # summarize results
-    calib_note = ex.calib_note
-    calib_note_dict = calib_note._dict if calib_note else None
+#     # summarize results
+#     calib_note = ex.calib_note
+#     calib_note_dict = calib_note._dict if calib_note else None
 
-    props = {
-        "qubit_frequencies": control_frequencies,
-        "t1": {
-            key: t1[key].t1 for key in t1
-        }, 
-        "t1_err": {
-            key: t1[key].t1_err for key in t1
-        },
-        "t1_r2": {
-            key: t1[key].r2 for key in t1
-        },
-        "t2": {
-            key: t2[key].t2 for key in t2
-        },
-        "t2_err": {
-            key: t2[key].t2_err for key in t2
-        },
-        "t2_r2": {
-            key: t2[key].r2 for key in t2
-        },
-        "readout_fidelities": cls["readout_fidelities"],
-        "average_readout_fidelity": cls["average_readout_fidelity"],
-    }
+#     props = {
+#         "qubit_frequencies": control_frequencies,
+#         "t1": {
+#             key: t1[key].t1 for key in t1
+#         }, 
+#         "t1_err": {
+#             key: t1[key].t1_err for key in t1
+#         },
+#         "t1_r2": {
+#             key: t1[key].r2 for key in t1
+#         },
+#         "t2": {
+#             key: t2[key].t2 for key in t2
+#         },
+#         "t2_err": {
+#             key: t2[key].t2_err for key in t2
+#         },
+#         "t2_r2": {
+#             key: t2[key].r2 for key in t2
+#         },
+#         "readout_fidelities": cls["readout_fidelities"],
+#         "average_readout_fidelity": cls["average_readout_fidelity"],
+#     }
 
-    raw_data: dict = {
-        # "t1": {
-        #     key: {
-        #         "data": t1[key].data, 
-        #         "sweep_range": t1[key].sweep_range,
-        #     } for key in t1
-        # },
-        # "t2": {
-        #     key: {
-        #         "data": t2[key].data, 
-        #         "sweep_range": t2[key].sweep_range,
-        #     } for key in t2
-        # },
-        # "classifiers": cls["data"]                                             # raw data used for building classifiers
-    }
+#     raw_data: dict = {
+#         # "t1": {
+#         #     key: {
+#         #         "data": t1[key].data, 
+#         #         "sweep_range": t1[key].sweep_range,
+#         #     } for key in t1
+#         # },
+#         # "t2": {
+#         #     key: {
+#         #         "data": t2[key].data, 
+#         #         "sweep_range": t2[key].sweep_range,
+#         #     } for key in t2
+#         # },
+#         # "classifiers": cls["data"]                                             # raw data used for building classifiers
+#     }
 
-    # output
-    result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
-    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+#     # output
+#     result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
+#     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
