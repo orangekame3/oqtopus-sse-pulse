@@ -50,12 +50,12 @@ def calibrate(ex: CustomExperiment):
     print(ex.system_manager._config_loader._props_dict)
     ex.obtain_rabi_params(plot=False)
     control_frequencies = ex.calibrate_control_frequency(plot=False)
-    ex.modified_frequencies(control_frequencies)
+    ex.modified_frequencies({"Q37": control_frequencies.get(["Q37"]) - 1})
     # print(ex.system_manager._config_loader._props_dict)
     ex.calibrate_hpi_pulse(plot=False)
     # t1 = ex.t1_experiment(plot=False)
     # t1 = t1.data
-    ex.modified_frequencies({"Q37": control_frequencies.get(["Q37"]) - 1})
+    ex.modified_frequencies(control_frequencies)
     ex.calibrate_hpi_pulse(plot=False)
     # t2 = ex.t2_experiment(plot=False)
     # t2 = t2.data
