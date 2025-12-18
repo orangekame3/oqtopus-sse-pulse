@@ -8,6 +8,7 @@ from numpy.typing import ArrayLike, NDArray
 
 
 class CustomCharacterizationMixin(CharacterizationMixin):
+    # define the custom version of calibrate_control_frequency()
     def calibrate_control_frequency(
         self,
         targets: Collection[str] | str | None = None,
@@ -29,7 +30,7 @@ class CustomCharacterizationMixin(CharacterizationMixin):
             shots=shots,
             interval=interval,
             plot=plot,
-            save_image=False,
+            save_image=False,   # do not save image
         )
         resonant_frequencies = result["resonant_frequencies"]
 
@@ -41,62 +42,58 @@ class CustomCharacterizationMixin(CharacterizationMixin):
 
 
 class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
+    # inherit the custom calibrate_control_frequency function by extending CustomCharacterizationMixin
     pass
 
 
 def calibrate(ex: CustomExperiment):
-# def calibrate(ex: qx.Experiment):
-    # calibrate
-    print(ex.system_manager._config_loader._props_dict)
-    ex.obtain_rabi_params(plot=False)
-    control_frequencies = ex.calibrate_control_frequency(plot=False)
-    # ex.modified_frequencies({"Q37": control_frequencies.get(["Q37"]) - 0.2})
-    # print(ex.system_manager._config_loader._props_dict)
-    # ex.calibrate_hpi_pulse(plot=False)
-    # t1 = ex.t1_experiment(plot=False)
-    # t1 = t1.data
-    ex.modified_frequencies(control_frequencies)
-    ex.calibrate_hpi_pulse(plot=False)
-    # t2 = ex.t2_experiment(plot=False)
-    # t2 = t2.data
-    # cls = ex.build_classifier(plot=False)
+    # start calibration
+    ex.obtain_rabi_params(plot=False)                                   # Rabi measurement
+    control_frequencies = ex.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
+    ex.modified_frequencies(control_frequencies)                        # update qubit frequencies
+    ex.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
+    t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
+    t1 = t1.data                                                        # store results of T1 measurement
+    t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
+    t2 = t2.data                                                        # store results of T2 measurement
+    cls = ex.build_classifier(plot=False)
 
-    # # put results into payload
-    # calib_note = ex.calib_note
-    # calib_note_dict = calib_note._dict if calib_note else None
-    # result: dict = {"calib_note": calib_note_dict}
-    # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    # summarize results
+    calib_note = ex.calib_note
+    calib_note_dict = calib_note._dict if calib_note else None
+    result: dict = {"calib_note": calib_note_dict}
 
-    # props = {
-    #     "t1": {
-    #         key: t1[key].t1 for key in t1
-    #     }, 
-    #     "t1_err": {
-    #         key: t1[key].t1_err for key in t1
-    #     },
-    #     "t1_r2": {
-    #         key: t1[key].r2 for key in t1
-    #     },
-    #     "t2": {
-    #         key: t2[key].t2 for key in t2
-    #     },
-    #     "t2_err": {
-    #         key: t2[key].t2_err for key in t2
-    #     },
-    #     "t2_r2": {
-    #         key: t2[key].r2 for key in t2
-    #     },
-    #     "readout_fidelities": cls["readout_fidelities"],
-    #     "average_readout_fidelity": cls["average_readout_fidelity"],
-    # }
-    # result: dict = {"props": props}
-    # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    props = {
+        "qubit_frequencies": control_frequencies,
+        "t1": {
+            key: t1[key].t1 for key in t1
+        }, 
+        "t1_err": {
+            key: t1[key].t1_err for key in t1
+        },
+        "t1_r2": {
+            key: t1[key].r2 for key in t1
+        },
+        "t2": {
+            key: t2[key].t2 for key in t2
+        },
+        "t2_err": {
+            key: t2[key].t2_err for key in t2
+        },
+        "t2_r2": {
+            key: t2[key].r2 for key in t2
+        },
+        "readout_fidelities": cls["readout_fidelities"],
+        "average_readout_fidelity": cls["average_readout_fidelity"],
+    }
+    result["props"] = props
 
-    # misc: dict = {
-    #     "data": cls["data"],
-    #     "classifiers": cls["classifiers"]
-    # }
-    # result: dict = {"misc": misc}
-    # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    misc: dict = {
+        "data": cls["data"]                                             # raw data used for building classifiers
+    }
+    result["misc"] = misc
 
-    # return cls["classifier"]
+    # output
+    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+
+    return cls["classifier"]
