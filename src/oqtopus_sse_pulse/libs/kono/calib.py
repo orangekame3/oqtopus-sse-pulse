@@ -55,57 +55,57 @@ def calibrate(ex: CustomExperiment):
     t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
     t1 = t1.data                                                        # store results of T1 measurement
     t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
-    t2 = t2.data                                                        # store results of T2 measurement   # ここまでいけた
-    cls = ex.build_classifier(plot=False)
+    t2 = t2.data                                                        # store results of T2 measurement
+    cls = ex.build_classifier(plot=False)                               # ここまでいけた
 
-    # # summarize results
-    # calib_note = ex.calib_note
-    # calib_note_dict = calib_note._dict if calib_note else None
-    # result: dict = {"calib_note": calib_note_dict}
+    # summarize results
+    calib_note = ex.calib_note
+    calib_note_dict = calib_note._dict if calib_note else None
+    result: dict = {"calib_note": calib_note_dict}
 
-    # props = {
-    #     "qubit_frequencies": control_frequencies,
-    #     "t1": {
-    #         key: t1[key].t1 for key in t1
-    #     }, 
-    #     "t1_err": {
-    #         key: t1[key].t1_err for key in t1
-    #     },
-    #     "t1_r2": {
-    #         key: t1[key].r2 for key in t1
-    #     },
-    #     "t2": {
-    #         key: t2[key].t2 for key in t2
-    #     },
-    #     "t2_err": {
-    #         key: t2[key].t2_err for key in t2
-    #     },
-    #     "t2_r2": {
-    #         key: t2[key].r2 for key in t2
-    #     },
-    #     "readout_fidelities": cls["readout_fidelities"],
-    #     "average_readout_fidelity": cls["average_readout_fidelity"],
-    # }
-    # result["props"] = props
+    props = {
+        "qubit_frequencies": control_frequencies,
+        "t1": {
+            key: t1[key].t1 for key in t1
+        }, 
+        "t1_err": {
+            key: t1[key].t1_err for key in t1
+        },
+        "t1_r2": {
+            key: t1[key].r2 for key in t1
+        },
+        "t2": {
+            key: t2[key].t2 for key in t2
+        },
+        "t2_err": {
+            key: t2[key].t2_err for key in t2
+        },
+        "t2_r2": {
+            key: t2[key].r2 for key in t2
+        },
+        "readout_fidelities": cls["readout_fidelities"],
+        "average_readout_fidelity": cls["average_readout_fidelity"],
+    }
+    result["props"] = props
 
-    # raw_data: dict = {
-    #     "t1": {
-    #         key: {
-    #             "data": t1[key].data, 
-    #             "sweep_range": t1[key].sweep_range,
-    #         } for key in t1
-    #     },
-    #     "t2": {
-    #         key: {
-    #             "data": t2[key].data, 
-    #             "sweep_range": t2[key].sweep_range,
-    #         } for key in t2
-    #     },
-    #     "classifiers": cls["data"]                                             # raw data used for building classifiers
-    # }
-    # result["raw_data"] = raw_data
+    raw_data: dict = {
+        "t1": {
+            key: {
+                "data": t1[key].data, 
+                "sweep_range": t1[key].sweep_range,
+            } for key in t1
+        },
+        "t2": {
+            key: {
+                "data": t2[key].data, 
+                "sweep_range": t2[key].sweep_range,
+            } for key in t2
+        },
+        "classifiers": cls["data"]                                             # raw data used for building classifiers
+    }
+    result["raw_data"] = raw_data
 
-    # # output
-    # print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+    # output
+    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
     # return cls["classifiers"]
