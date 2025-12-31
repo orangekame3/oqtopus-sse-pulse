@@ -51,7 +51,8 @@ class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
             idle_time: int = 200,
         ):
     
-        print("hello")
+        for i in range(5):
+            print(f"hello {i}")
         # output
         result: dict = {"test": 1}
         return result
