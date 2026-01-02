@@ -52,7 +52,7 @@ def calibrate(ex: CustomExperiment):
     control_frequencies = ex.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
     ex.modified_frequencies(control_frequencies)                        # update qubit frequencies
     ex.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
-    ex.calibrate_pi_pulse(plot=False)                                  # calibrate hpi pulse
+    ex.calibrate_pi_pulse(plot=False)                                   # calibrate pi pulse
     t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
     t1 = t1.data                                                        # store results of T1 measurement
     t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
