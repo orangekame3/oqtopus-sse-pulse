@@ -46,17 +46,22 @@ class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
     pass
 
 
-def calibrate(ex: CustomExperiment):
+def calibrate(ex: CustomExperiment, calib_readout: bool = False):
     # start calibration
-    ex.obtain_rabi_params(plot=False)                                   # Rabi measurement
-    control_frequencies = ex.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
-    ex.modified_frequencies(control_frequencies)                        # update qubit frequencies
-    ex.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
-    t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
-    t1 = t1.data                                                        # store results of T1 measurement
-    t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
-    t2 = t2.data                                                        # store results of T2 measurement
-    cls = ex.build_classifier(plot=False)                               # build classifiers
+    ex.obtain_rabi_params(plot=False)                                                       # Rabi measurement
+    control_frequencies = ex.calibrate_control_frequency(plot=False)                        # calibrate qubit frequencies
+    ex.modified_frequencies(control_frequencies)                                            # update qubit frequencies
+
+    if calib_readout:
+        print("Warning!: just measures readout frequencies, not runs calibration")
+        readout_frequencies = ex.calibrate_readout_frequency(targets=ex.qubit_labels)       # calibrate readout frequencies
+
+    ex.calibrate_hpi_pulse(plot=False)                                                      # calibrate hpi pulse
+    t1 = ex.t1_experiment(plot=False)                                                       # T1 measurement
+    t1 = t1.data                                                                            # store results of T1 measurement
+    t2 = ex.t2_experiment(plot=False)                                                       # T2 measurement
+    t2 = t2.data                                                                            # store results of T2 measurement
+    cls = ex.build_classifier(plot=False)                                                   # build classifiers
 
     # summarize results
     calib_note = ex.calib_note
@@ -86,22 +91,10 @@ def calibrate(ex: CustomExperiment):
         "average_readout_fidelity": cls["average_readout_fidelity"],
     }
 
-    raw_data: dict = {
-        # "t1": {
-        #     key: {
-        #         "data": t1[key].data, 
-        #         "sweep_range": t1[key].sweep_range,
-        #     } for key in t1
-        # },
-        # "t2": {
-        #     key: {
-        #         "data": t2[key].data, 
-        #         "sweep_range": t2[key].sweep_range,
-        #     } for key in t2
-        # },
-        # "classifiers": cls["data"]                                             # raw data used for building classifiers
+    params = {
+        key: readout_frequencies[key] for key in readout_frequencies
     }
 
     # output
-    result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
+    result: dict = {"calib_note": calib_note_dict, "props": props, "params": params}
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
