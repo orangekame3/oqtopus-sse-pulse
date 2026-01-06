@@ -20,10 +20,14 @@ muxes=[9,10]
 # exclude_qubits = ['Q36', 'Q37', 'Q38', 'Q39', 'Q40', 'Q41','Q43'] # OK
 # qubit = ['Q42', 'Q43']
 # exclude_qubits = ['Q36', 'Q37', 'Q38', 'Q39', 'Q40', 'Q41'] # OK
-qubit = ['Q36','Q37','Q38','Q39','Q40','Q42','Q43']
-exclude_qubits = ['Q41']  # 除外するqubitリスト
+# qubit = ['Q36','Q37','Q38','Q39','Q40']
+# exclude_qubits = ['Q41','Q42','Q43']  # 除外するqubitリスト
+#qubit = ['Q36','Q37','Q38','Q39','Q40','Q42','Q43'] #NG
+qubit = ['Q36','Q37','Q38','Q39','Q40'] #OK
+#qubit = ['Q42','Q43'] #OK
+# exclude_qubits = ['Q41']  # 除外するqubitリスト
 time_idle = 200  # 各piパルス間の待ち時間(ns)
-counts_mes = 26000  # 測定回数
+counts_mes = 28000  # 測定回数
 interval = 150 * 1000 # measure sequence interval (ns)
 duration = 32  # readout pulse duration
 num_iterations = 3  # 繰り返し回数を指定
@@ -33,9 +37,9 @@ try:
     # qubexのExperimentクラスのインスタンスを作成
     exp = Experiment(
         chip_id=chip_id,
-        muxes=muxes,
-#        qubits = qubit,
-        exclude_qubits = exclude_qubits,
+#        muxes=muxes,
+        qubits = qubit,
+#        exclude_qubits = exclude_qubits,
         params_dir="/sse/in/repo/hirose/params", # <-- 自分のparamsディレクトリのパスに変更してください
         calib_note_path="/sse/in/repo/hirose/calib_note.json" # <-- 自分のcalib_noteファイルのパスに変更してください
     )
