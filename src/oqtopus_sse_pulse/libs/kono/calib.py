@@ -6,6 +6,9 @@ from typing import Collection, Literal
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+import pickle
+import base64
+
 
 class CustomCharacterizationMixin(CharacterizationMixin):
     # define the custom version of calibrate_control_frequency()
@@ -95,7 +98,11 @@ def calibrate(ex: CustomExperiment, calib_readout: bool = False):
         key: readout_frequencies[key] for key in readout_frequencies
     }
 
+    # シリアライズ（バイナリ→Base64文字列）
+    cls_b = pickle.dumps(ex.classifiers, protocol=pickle.HIGHEST_PROTOCOL)
+    cls_text = base64.b64encode(cls_b).decode("utf-8")
+
     # output
-    result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": ex.classifiers}
+    result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
     # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params}
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
