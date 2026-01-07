@@ -106,3 +106,10 @@ def calibrate(ex: CustomExperiment, calib_readout: bool = False):
     result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
     # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params}
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+
+
+def restore_classifiers_from_base64(classifiers_base64: str) -> dict[str, any]:
+    # デシリアライズ（Base64文字列→バイナリ→オブジェクト）
+    cls_b = base64.b64decode(classifiers_base64.encode("utf-8"))
+    classifiers = pickle.loads(cls_b)
+    return classifiers
