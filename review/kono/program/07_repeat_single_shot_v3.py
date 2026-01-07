@@ -27,7 +27,7 @@ params_dir = "/sse/in/repo/kono/params"
 calib_note_path = "/sse/in/repo/kono/calib_note.json"
 duration = 32  # hpiパルスの全体の長さ(ns)
 interval = 100 * 1000  # 測定から初期化までの待機時間(ns単位)
-max_execution_time = 1200 * 0.5  # 最大実行時間（秒）
+max_execution_time = 1200 - 30  # 最大実行時間（秒）
 recalib_cls = True  # 分類器を動的にrecalibrateするかどうか
 
 try:
