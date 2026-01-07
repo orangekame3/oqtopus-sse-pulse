@@ -96,5 +96,6 @@ def calibrate(ex: CustomExperiment, calib_readout: bool = False):
     }
 
     # output
-    result: dict = {"calib_note": calib_note_dict, "props": props, "params": params}
+    result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": ex.classifiers}
+    # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params}
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
