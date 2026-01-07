@@ -108,8 +108,10 @@ def calibrate(ex: CustomExperiment, calib_readout: bool = False):
     print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
 
-def restore_classifiers_from_base64(classifiers_base64: str) -> dict[str, any]:
+def restore_classifiers_from_base64() -> dict[str, any]:
+    with open("classifiers_base64.txt", "r", encoding="utf-8") as f:
+        cls_base64 = f.read()
     # デシリアライズ（Base64文字列→バイナリ→オブジェクト）
-    cls_b = base64.b64decode(classifiers_base64.encode("utf-8"))
+    cls_b = base64.b64decode(cls_base64.encode("utf-8"))
     classifiers = pickle.loads(cls_b)
     return classifiers
