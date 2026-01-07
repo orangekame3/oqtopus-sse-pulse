@@ -117,8 +117,8 @@ def calibrate(ex: CustomExperiment):
         cls_text = base64.b64encode(cls_b).decode("utf-8")
 
         # output
+        result: dict = {"calib_note": calib_note_dict, "props": props, "classifiers": cls_text}
         # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
-        result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
     # 例外処理
