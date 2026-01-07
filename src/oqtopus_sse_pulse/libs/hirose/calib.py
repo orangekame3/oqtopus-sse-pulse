@@ -51,7 +51,7 @@ def calibrate(ex: CustomExperiment):
     ex.obtain_rabi_params(plot=False)                                   # Rabi measurement
     control_frequencies = ex.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
     ex.modified_frequencies(control_frequencies)                        # update qubit frequencies
-    readout_frequency = ex.calibrate_readout_frequency(plot=False)
+#    readout_frequency = ex.calibrate_readout_frequency(plot=False)
     ex.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
     ex.calibrate_pi_pulse(plot=False)                                   # calibrate pi pulse
     t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
