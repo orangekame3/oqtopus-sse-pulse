@@ -61,10 +61,10 @@ def calibrate(ex: CustomExperiment):
         ex.obtain_rabi_params(plot=False)                                                           # Rabi measurement
         control_frequencies = ex.calibrate_control_frequency(plot=False)                            # calibrate qubit frequencies
         ex.modified_frequencies(control_frequencies)                                            # update qubit frequencies
-        control_amplitude = {}
-        for qubit in ex.qubit_labels:
-            qres = ex.measure_qubit_resonance(target=qubit, plot=False, save_image=False)      # measure qubit resonance
-            control_amplitude[qubit] = qres["estimated_amplitude"]
+        # control_amplitude = {}
+        # for qubit in ex.qubit_labels:
+        #     qres = ex.measure_qubit_resonance(target=qubit, plot=False, save_image=False)      # measure qubit resonance
+        #     control_amplitude[qubit] = qres["estimated_amplitude"]
 
         # if calib_readout:
         print("Warning!: just measures readout frequencies, not runs calibration")
@@ -108,15 +108,16 @@ def calibrate(ex: CustomExperiment):
             "average_readout_fidelity": cls["average_readout_fidelity"],
         }
 
-        params = {
-            key: control_amplitude[key] for key in control_amplitude
-        }
+        # params = {
+        #     key: control_amplitude[key] for key in control_amplitude
+        # }
 
         # シリアライズ（バイナリ→Base64文字列）
         cls_b = pickle.dumps(ex.classifiers, protocol=pickle.HIGHEST_PROTOCOL)
         cls_text = base64.b64encode(cls_b).decode("utf-8")
 
         # output
+        # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
         result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
