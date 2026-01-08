@@ -6,6 +6,14 @@ from typing import Collection, Literal
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+import pickle
+import base64
+
+import traceback
+
+
+CLASSIFIERS_BASE64 = ""
+
 
 class CustomCharacterizationMixin(CharacterizationMixin):
     # define the custom version of calibrate_control_frequency()
@@ -47,64 +55,81 @@ class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
 
 
 def calibrate(ex: CustomExperiment):
-    # start calibration
-    ex.obtain_rabi_params(plot=False)                                   # Rabi measurement
-    control_frequencies = ex.calibrate_control_frequency(plot=False)    # calibrate qubit frequencies
-    ex.modified_frequencies(control_frequencies)                        # update qubit frequencies
-#    readout_frequency = ex.calibrate_readout_frequency(plot=False)
-    ex.calibrate_hpi_pulse(plot=False)                                  # calibrate hpi pulse
-    ex.calibrate_pi_pulse(plot=False)                                   # calibrate pi pulse
-    t1 = ex.t1_experiment(plot=False)                                   # T1 measurement
-    t1 = t1.data                                                        # store results of T1 measurement
-    t2 = ex.t2_experiment(plot=False)                                   # T2 measurement
-    t2 = t2.data                                                        # store results of T2 measurement
-    cls = ex.build_classifier(plot=False)                               # build classifiers
+# def calibrate(ex: CustomExperiment, calib_readout: bool = False):
+    try:
+        # start calibration
+        ex.obtain_rabi_params(plot=False)                                                           # Rabi measurement
+        control_frequencies = ex.calibrate_control_frequency(plot=False)                            # calibrate qubit frequencies
+        ex.modified_frequencies(control_frequencies)                                            # update qubit frequencies
+        # control_amplitude = {}
+        # for qubit in ex.qubit_labels:
+        #     qres = ex.measure_qubit_resonance(target=qubit, plot=False, save_image=False)      # measure qubit resonance
+        #     control_amplitude[qubit] = qres["estimated_amplitude"]
 
-    # summarize results
-    calib_note = ex.calib_note
-    calib_note_dict = calib_note._dict if calib_note else None
+        # if calib_readout:
+        print("Warning!: just measures readout frequencies, not runs calibration")
+        readout_frequencies = ex.calibrate_readout_frequency(targets=ex.qubit_labels)       # calibrate readout frequencies
 
-    props = {
-        "qubit_frequencies": control_frequencies,
-        "readout_frequency": readout_frequency,
-        "t1": {
-            key: t1[key].t1 for key in t1
-        }, 
-        "t1_err": {
-            key: t1[key].t1_err for key in t1
-        },
-        "t1_r2": {
-            key: t1[key].r2 for key in t1
-        },
-        "t2": {
-            key: t2[key].t2 for key in t2
-        },
-        "t2_err": {
-            key: t2[key].t2_err for key in t2
-        },
-        "t2_r2": {
-            key: t2[key].r2 for key in t2
-        },
-        "readout_fidelities": cls["readout_fidelities"],
-        "average_readout_fidelity": cls["average_readout_fidelity"],
-    }
+        ex.calibrate_hpi_pulse(plot=False)                                                      # calibrate hpi pulse
+        ex.calibrate_pi_pulse(plot=False)                                                       # calibrate pi pulse
+        t1 = ex.t1_experiment(plot=False)                                                       # T1 measurement
+        t1 = t1.data                                                                            # store results of T1 measurement
+        t2 = ex.t2_experiment(plot=False)                                                       # T2 measurement
+        t2 = t2.data                                                                            # store results of T2 measurement
+        cls = ex.build_classifier(plot=False)                                                   # build classifiers
 
-    raw_data: dict = {
-        # "t1": {
-        #     key: {
-        #         "data": t1[key].data, 
-        #         "sweep_range": t1[key].sweep_range,
-        #     } for key in t1
-        # },
-        # "t2": {
-        #     key: {
-        #         "data": t2[key].data, 
-        #         "sweep_range": t2[key].sweep_range,
-        #     } for key in t2
-        # },
-        # "classifiers": cls["data"]                                             # raw data used for building classifiers
-    }
+        # summarize results
+        calib_note = ex.calib_note
+        calib_note_dict = calib_note._dict if calib_note else None
 
-    # output
-    result: dict = {"calib_note": calib_note_dict, "props": props, "raw_data": raw_data}
-    print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+        props = {
+            "resonator_frequency": {
+                key: readout_frequencies[key] for key in readout_frequencies
+            },
+            "qubit_frequency": control_frequencies,
+            "t1": {
+                key: t1[key].t1 for key in t1
+            }, 
+            "t1_err": {
+                key: t1[key].t1_err for key in t1
+            },
+            "t1_r2": {
+                key: t1[key].r2 for key in t1
+            },
+            "t2": {
+                key: t2[key].t2 for key in t2
+            },
+            "t2_err": {
+                key: t2[key].t2_err for key in t2
+            },
+            "t2_r2": {
+                key: t2[key].r2 for key in t2
+            },
+            "readout_fidelities": cls["readout_fidelities"],
+            "average_readout_fidelity": cls["average_readout_fidelity"],
+        }
+
+        # params = {
+        #     key: control_amplitude[key] for key in control_amplitude
+        # }
+
+        # シリアライズ（バイナリ→Base64文字列）
+        cls_b = pickle.dumps(ex.classifiers, protocol=pickle.HIGHEST_PROTOCOL)
+        cls_text = base64.b64encode(cls_b).decode("utf-8")
+
+        # output
+        result: dict = {"calib_note": calib_note_dict, "props": props, "classifiers": cls_text}
+        # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
+        print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+
+    # 例外処理
+    except Exception as e:
+        print("Exception:", e)
+        traceback.print_exc()
+
+
+def restore_classifiers_from_base64() -> dict[str, any]:
+    # デシリアライズ（Base64文字列→バイナリ→オブジェクト）
+    cls_b = base64.b64decode(CLASSIFIERS_BASE64.encode("utf-8"))
+    classifiers = pickle.loads(cls_b)
+    return classifiers
