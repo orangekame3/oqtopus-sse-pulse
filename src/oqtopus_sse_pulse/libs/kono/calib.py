@@ -63,7 +63,7 @@ def calibrate(ex: CustomExperiment):
         # detect errors in Rabi measurement
         err_qubits = []
         for qubit, rabi_params in ex.calib_note._dict["rabi_params"].items():
-            if rabi_params["frequency"] is None:
+            if np.isnan(rabi_params["frequency"]):
                 err_qubits.append(qubit)
         if len(err_qubits) > 0:
             raise RuntimeError(f"Rabi measurement failed for qubits: {', '.join(err_qubits)}")
