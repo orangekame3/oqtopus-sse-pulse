@@ -59,6 +59,16 @@ def calibrate(ex: CustomExperiment):
     try:
         # start calibration
         ex.obtain_rabi_params(plot=False)                                                           # Rabi measurement
+
+        # detect errors in Rabi measurement
+        err_qubits = []
+        for qubit, rabi_params in ex.calib_note._dict.items():
+            if rabi_params["frequency"] is None:
+                err_qubits.append(qubit)
+        if len(err_qubits) > 0:
+            raise RuntimeError(f"Rabi measurement failed for qubits: {', '.join(err_qubits)}")
+
+        # continue calibration if Rabi measurement is successful
         control_frequencies = ex.calibrate_control_frequency(plot=False)                            # calibrate qubit frequencies
         ex.modified_frequencies(control_frequencies)                                            # update qubit frequencies
         # control_amplitude = {}
