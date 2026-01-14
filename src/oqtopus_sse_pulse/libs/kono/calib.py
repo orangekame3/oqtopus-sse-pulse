@@ -3,22 +3,16 @@ import json
 
 from qubex.experiment.mixin.characterization_mixin import CharacterizationMixin
 from qubex.measurement.measurement import DEFAULT_INTERVAL, DEFAULT_SHOTS
-# from qubex.experiment.mixin.characterization_mixin import CharacterizationMixin, DEFAULT_INTERVAL, DEFAULT_SHOTS, SAMPLING_PERIOD
 from typing import Collection
-# from typing import Collection, Literal
 import numpy as np
 from numpy.typing import ArrayLike
-# from numpy.typing import ArrayLike, NDArray
 
-import pickle
-import base64
+# import pickle
+# import base64
 
 import traceback
 
 import math
-
-
-# CLASSIFIERS_BASE64 = ""
 
 
 class CustomCharacterizationMixin(CharacterizationMixin):
@@ -68,11 +62,12 @@ def calibrate(ex: CustomExperiment):
         # detect errors in Rabi measurement
         err_qubits = []
         for qubit, rabi_params in ex.calib_note._dict["rabi_params"].items():
-            if rabi_params["frequency"] is None or rabi_params["pi_amplitude"] is math.nan:
+            if rabi_params["frequency"] is None or rabi_params["frequency"] is math.nan:
                 err_qubits.append(qubit)
         if len(err_qubits) > 0:
             # stop calibration and output error message if Rabi measurement failed for some qubits
-            result: dict = {"status": "error", "err_qubits": err_qubits}
+            result: dict = {"status": "failed", "err_qubits": err_qubits}
+            # result: dict = {"status": "error", "err_qubits": err_qubits}
             print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
             raise RuntimeError(f"Rabi measurement failed for qubits: {', '.join(err_qubits)}")
 
@@ -129,23 +124,11 @@ def calibrate(ex: CustomExperiment):
         #     key: control_amplitude[key] for key in control_amplitude
         # }
 
-        # # シリアライズ（バイナリ→Base64文字列）
-        # cls_b = pickle.dumps(ex.classifiers, protocol=pickle.HIGHEST_PROTOCOL)
-        # cls_text = base64.b64encode(cls_b).decode("utf-8")
-
         # output
         result: dict = {"status": "succeeded", "calib_note": calib_note_dict, "props": props}
-        # result: dict = {"status": "succeeded", "calib_note": calib_note_dict, "props": props, "classifiers": cls_text}
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
-    # 例外処理
+    # handle exceptions
     except Exception as e:
         print("Exception:", e)
         traceback.print_exc()
-
-
-# def restore_classifiers_from_base64() -> dict[str, any]:
-#     # デシリアライズ（Base64文字列→バイナリ→オブジェクト）
-#     cls_b = base64.b64decode(CLASSIFIERS_BASE64.encode("utf-8"))
-#     classifiers = pickle.loads(cls_b)
-#     return classifiers
