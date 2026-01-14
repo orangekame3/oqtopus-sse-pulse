@@ -1,18 +1,18 @@
 import qubex as qx
 import json
 
-from qubex.experiment.mixin.characterization_mixin import CharacterizationMixin, DEFAULT_INTERVAL, DEFAULT_SHOTS, SAMPLING_PERIOD
-from typing import Collection, Literal
+from qubex.experiment.mixin.characterization_mixin import CharacterizationMixin
+from qubex.measurement.measurement import DEFAULT_INTERVAL, DEFAULT_SHOTS
+from typing import Collection
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import ArrayLike
 
-import pickle
-import base64
+# import pickle
+# import base64
 
 import traceback
 
-
-CLASSIFIERS_BASE64 = ""
+import math
 
 
 class CustomCharacterizationMixin(CharacterizationMixin):
@@ -55,28 +55,40 @@ class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
 
 
 def calibrate(ex: CustomExperiment):
-# def calibrate(ex: CustomExperiment, calib_readout: bool = False):
     try:
         # start calibration
-        ex.obtain_rabi_params(plot=False)                                                           # Rabi measurement
-        control_frequencies = ex.calibrate_control_frequency(plot=False)                            # calibrate qubit frequencies
-        ex.modified_frequencies(control_frequencies)                                            # update qubit frequencies
+        ex.obtain_rabi_params(plot=False)                                                               # Rabi measurement
+
+        # detect errors in Rabi measurement
+        err_qubits = []
+        for qubit, rabi_params in ex.calib_note._dict["rabi_params"].items():
+            if rabi_params["frequency"] is None or math.isnan(rabi_params["frequency"]) or np.isnan(rabi_params["frequency"]):
+                err_qubits.append(qubit)
+        if len(err_qubits) > 0:
+            # stop calibration and output error message if Rabi measurement failed for some qubits
+            result: dict = {"status": "failed", "err_qubits": err_qubits}
+            # result: dict = {"status": "error", "err_qubits": err_qubits}
+            print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+            raise RuntimeError(f"Rabi measurement failed for qubits: {', '.join(err_qubits)}")
+
+        # continue calibration if Rabi measurement terminated successfully
+        control_frequencies = ex.calibrate_control_frequency(plot=False)                                # calibrate qubit frequencies
+        ex.modified_frequencies(control_frequencies)                                                    # update qubit frequencies
         # control_amplitude = {}
         # for qubit in ex.qubit_labels:
-        #     qres = ex.measure_qubit_resonance(target=qubit, plot=False, save_image=False)      # measure qubit resonance
+        #     qres = ex.measure_qubit_resonance(target=qubit, plot=False, save_image=False)             # measure qubit resonance
         #     control_amplitude[qubit] = qres["estimated_amplitude"]
 
-        # if calib_readout:
-        print("Warning!: just measures readout frequencies, not runs calibration")
-        readout_frequencies = ex.calibrate_readout_frequency(targets=ex.qubit_labels)       # calibrate readout frequencies
+        print("Warning! just measures readout frequencies, not runs calibration")
+        readout_frequencies = ex.calibrate_readout_frequency(targets=ex.qubit_labels)                   # calibrate readout frequencies
 
-        ex.calibrate_hpi_pulse(plot=False)                                                      # calibrate hpi pulse
-        ex.calibrate_pi_pulse(plot=False)                                                       # calibrate pi pulse
-        t1 = ex.t1_experiment(plot=False)                                                       # T1 measurement
-        t1 = t1.data                                                                            # store results of T1 measurement
-        t2 = ex.t2_experiment(plot=False)                                                       # T2 measurement
-        t2 = t2.data                                                                            # store results of T2 measurement
-        cls = ex.build_classifier(plot=False)                                                   # build classifiers
+        ex.calibrate_hpi_pulse(plot=False)                                                              # calibrate hpi pulse
+        ex.calibrate_pi_pulse(plot=False)                                                               # calibrate pi pulse
+        t1 = ex.t1_experiment(plot=False)                                                               # T1 measurement
+        t1 = t1.data                                                                                    # store results of T1 measurement
+        t2 = ex.t2_experiment(plot=False)                                                               # T2 measurement
+        t2 = t2.data                                                                                    # store results of T2 measurement
+        cls = ex.build_classifier(plot=False)                                                           # build classifiers
 
         # summarize results
         calib_note = ex.calib_note
@@ -113,23 +125,11 @@ def calibrate(ex: CustomExperiment):
         #     key: control_amplitude[key] for key in control_amplitude
         # }
 
-        # シリアライズ（バイナリ→Base64文字列）
-        cls_b = pickle.dumps(ex.classifiers, protocol=pickle.HIGHEST_PROTOCOL)
-        cls_text = base64.b64encode(cls_b).decode("utf-8")
-
         # output
-        result: dict = {"calib_note": calib_note_dict, "props": props, "classifiers": cls_text}
-        # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
+        result: dict = {"status": "succeeded", "calib_note": calib_note_dict, "props": props}
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
-    # 例外処理
+    # handle exceptions
     except Exception as e:
         print("Exception:", e)
         traceback.print_exc()
-
-
-def restore_classifiers_from_base64() -> dict[str, any]:
-    # デシリアライズ（Base64文字列→バイナリ→オブジェクト）
-    cls_b = base64.b64decode(CLASSIFIERS_BASE64.encode("utf-8"))
-    classifiers = pickle.loads(cls_b)
-    return classifiers
