@@ -11,6 +11,8 @@ import base64
 
 import traceback
 
+import math
+
 
 CLASSIFIERS_BASE64 = ""
 
@@ -63,14 +65,15 @@ def calibrate(ex: CustomExperiment):
         # detect errors in Rabi measurement
         err_qubits = []
         for qubit, rabi_params in ex.calib_note._dict["rabi_params"].items():
-            # if np.isnan(rabi_params["frequency"]):
-            #     err_qubits.append(qubit)
-            print(qubit, type(rabi_params["frequency"]), rabi_params["frequency"])
-        return
+            if rabi_params["frequency"] is None or rabi_params["pi_amplitude"] is math.nan:
+                err_qubits.append(qubit)
         if len(err_qubits) > 0:
+            # stop calibration and output error message if Rabi measurement failed for some qubits
+            result: dict = {"status": "error", "err_qubits": err_qubits}
+            print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
             raise RuntimeError(f"Rabi measurement failed for qubits: {', '.join(err_qubits)}")
 
-        # continue calibration if Rabi measurement is successful
+        # continue calibration if Rabi measurement terminated successfully
         control_frequencies = ex.calibrate_control_frequency(plot=False)                            # calibrate qubit frequencies
         ex.modified_frequencies(control_frequencies)                                            # update qubit frequencies
         # control_amplitude = {}
@@ -78,7 +81,6 @@ def calibrate(ex: CustomExperiment):
         #     qres = ex.measure_qubit_resonance(target=qubit, plot=False, save_image=False)      # measure qubit resonance
         #     control_amplitude[qubit] = qres["estimated_amplitude"]
 
-        # if calib_readout:
         print("Warning!: just measures readout frequencies, not runs calibration")
         readout_frequencies = ex.calibrate_readout_frequency(targets=ex.qubit_labels)       # calibrate readout frequencies
 
@@ -129,8 +131,8 @@ def calibrate(ex: CustomExperiment):
         cls_text = base64.b64encode(cls_b).decode("utf-8")
 
         # output
-        result: dict = {"calib_note": calib_note_dict, "props": props, "classifiers": cls_text}
-        # result: dict = {"calib_note": calib_note_dict, "props": props, "params": params, "classifiers": cls_text}
+        result: dict = {"status": "succeeded", "calib_note": calib_note_dict, "props": props, "classifiers": cls_text}
+        # result: dict = {"calib_note": calib_note_dict, "props": props, "classifiers": cls_text}
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
     # 例外処理
