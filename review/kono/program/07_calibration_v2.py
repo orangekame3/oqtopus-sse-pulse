@@ -3,42 +3,38 @@
 
 import traceback
 
-from qubex.pulse import PulseSchedule, FlatTop, Blank
-import numpy as np
-import json
+# from qubex.pulse import PulseSchedule, FlatTop, Blank
+# import numpy as np
+# import json
 
 from oqtopus_sse_pulse.libs.kono.calib import calibrate, CustomExperiment
 
-import time
-import datetime
+# import time
+# import datetime
 
 
 # 使用するqubit等の設定
 chip_id = '64Qv3'
-qubits = ['Q36', 'Q38', 'Q40'] # 測定対象のqubitリスト
+qubits = ['Q36', 'Q37', 'Q38', 'Q42', 'Q43'] # 測定対象のqubitリスト
 # qubits = ['Q36', 'Q37', 'Q38', 'Q39', 'Q40', 'Q41', 'Q42', 'Q43'] # 測定対象のqubitリスト
-time_idle = 1000  # 各hpiパルス間の待ち時間(ns)
-counts_mes = 10_000  # 測定回数 (1 ms <=> 10 shots <=> 700 B ~ 1 KB)
+# qubits = ['Q36', 'Q37', 'Q38', 'Q42', 'Q43', 'Q52', 'Q54', 'Q55'] # 測定対象のqubitリスト
+# qubits = ['Q36', 'Q37', 'Q38', 'Q39', 'Q40', 'Q41', 'Q42', 'Q43', 'Q48', 'Q49', 'Q50', 'Q51', 'Q52', 'Q53', 'Q54', 'Q55'] # 測定対象のqubitリスト
 params_dir = "/sse/in/repo/kono/params"
 calib_note_path = "/sse/in/repo/kono/calib_note.json"
-duration = 32  # hpiパルスの全体の長さ(ns)
 
 
 try:
     # CustomExperimentクラスのインスタンスを作成
     ex = CustomExperiment(
         chip_id=chip_id,
-        # muxes=muxes,
         qubits=qubits,
-        # exclude_qubits=exclude_qubits,
         params_dir=params_dir,
         calib_note_path=calib_note_path
     )
     ex.connect()
 
     # calibration
-    calibrate(ex)   # Warning!: just measures readout frequencies, not runs calibration
-    # calibrate(ex, calib_readout=True)   # Warning!: just measures readout frequencies, not runs calibration
+    calibrate(ex)
 
 
 # 例外処理
