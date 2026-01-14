@@ -62,7 +62,7 @@ def calibrate(ex: CustomExperiment):
         # detect errors in Rabi measurement
         err_qubits = []
         for qubit, rabi_params in ex.calib_note._dict["rabi_params"].items():
-            if rabi_params["frequency"] is None or rabi_params["frequency"] is math.nan:
+            if rabi_params["frequency"] is None or math.isnan(rabi_params["frequency"]) or np.isnan(rabi_params["frequency"]):
                 err_qubits.append(qubit)
         if len(err_qubits) > 0:
             # stop calibration and output error message if Rabi measurement failed for some qubits
