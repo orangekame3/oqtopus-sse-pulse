@@ -507,12 +507,13 @@ def calibrate(ex: CustomExperiment):
             "average_readout_fidelity": cls["average_readout_fidelity"],
         }
 
-        # params = {
-        #     key: control_amplitude[key] for key in control_amplitude
-        # }
+        params = {
+            key: readout_amplitude[key] for key in readout_amplitude
+        }
 
         # output
-        result: dict = {"status": "succeeded", "calib_note": calib_note_dict, "props": props}
+        result: dict = {"status": "succeeded", "calib_note": calib_note_dict, "props": props, "params": params}
+        # result: dict = {"status": "succeeded", "calib_note": calib_note_dict, "props": props}
         print("payload=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
 
     # handle exceptions
