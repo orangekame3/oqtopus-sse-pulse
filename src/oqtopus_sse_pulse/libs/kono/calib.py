@@ -24,6 +24,9 @@ import math
 from typing import Literal
 
 
+CHIP_ID = '64Qv3'
+
+
 class CustomCharacterizationMixin(CharacterizationMixin):
     # define the custom version of calibrate_control_frequency()
     def calibrate_control_frequency(
@@ -481,34 +484,40 @@ def calibrate(ex: CustomExperiment):
         calib_note_dict = calib_note._dict if calib_note else None
 
         props = {
-            "resonator_frequency": {
-                key: readout_frequencies[key] for key in readout_frequencies
-            },
-            "qubit_frequency": control_frequencies,
-            "t1": {
-                key: t1[key].t1 for key in t1
-            }, 
-            "t1_err": {
-                key: t1[key].t1_err for key in t1
-            },
-            "t1_r2": {
-                key: t1[key].r2 for key in t1
-            },
-            "t2": {
-                key: t2[key].t2 for key in t2
-            },
-            "t2_err": {
-                key: t2[key].t2_err for key in t2
-            },
-            "t2_r2": {
-                key: t2[key].r2 for key in t2
-            },
-            "readout_fidelities": cls["readout_fidelities"],
-            "average_readout_fidelity": cls["average_readout_fidelity"],
+            CHIP_ID: {
+                "resonator_frequency": {
+                    key: readout_frequencies[key] for key in readout_frequencies
+                },
+                "qubit_frequency": control_frequencies,
+                "t1": {
+                    key: t1[key].t1 for key in t1
+                }, 
+                "t1_err": {
+                    key: t1[key].t1_err for key in t1
+                },
+                "t1_r2": {
+                    key: t1[key].r2 for key in t1
+                },
+                "t2": {
+                    key: t2[key].t2 for key in t2
+                },
+                "t2_err": {
+                    key: t2[key].t2_err for key in t2
+                },
+                "t2_r2": {
+                    key: t2[key].r2 for key in t2
+                },
+                "readout_fidelities": cls["readout_fidelities"],
+                "average_readout_fidelity": cls["average_readout_fidelity"],
+            }
         }
 
         params = {
-            key: readout_amplitude[key] for key in readout_amplitude
+            CHIP_ID: {
+                "readout amplitude": {
+                    key: readout_amplitude[key] for key in readout_amplitude
+                }
+            }
         }
 
         # output
