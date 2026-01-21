@@ -422,6 +422,33 @@ class CustomCalibrationMixin(CalibrationMixin):
             readout_amplitudes=readout_amplitudes,  # enable custom readout amplitudes
         )
 
+    def calibrate_pi_pulse(
+        self,
+        targets: Collection[str] | str | None = None,
+        *,
+        duration: float | None = None,
+        ramptime: float | None = None,
+        n_points: int = 20,
+        n_rotations: int = 1,
+        r2_threshold: float = 0.5,
+        plot: bool = True,
+        shots: int = CALIBRATION_SHOTS,
+        interval: float = DEFAULT_INTERVAL,
+        readout_amplitudes: dict[str, float] | None = None,
+    ) -> ExperimentResult[AmplCalibData]:
+        return self.calibrate_default_pulse(
+            targets=targets,
+            pulse_type="pi",
+            duration=duration,
+            ramptime=ramptime,
+            n_points=n_points,
+            n_rotations=n_rotations,
+            r2_threshold=r2_threshold,
+            plot=plot,
+            shots=shots,
+            interval=interval,
+            readout_amplitudes=readout_amplitudes,  # enable custom readout amplitudes
+        )
 
 class CustomExperiment(CustomCharacterizationMixin, CustomCalibrationMixin, qx.Experiment):
 # class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
