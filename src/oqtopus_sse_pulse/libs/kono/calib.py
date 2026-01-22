@@ -432,7 +432,7 @@ class CustomExperiment(CustomCharacterizationMixin, CustomCalibrationMixin, qx.E
     pass
 
 
-def calibrate(ex: CustomExperiment, enable_ro_amp_calib: bool = False) -> None:
+def calibrate(ex: CustomExperiment, enable_ro_amp_calib: bool = True) -> None:
     try:
         # start calibration
         ex.obtain_rabi_params(plot=False)                                                               # Rabi measurement
