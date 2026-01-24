@@ -24,6 +24,9 @@ import math
 from typing import Literal
 
 
+CHIP_ID = '64Qv3'
+
+
 class CustomCharacterizationMixin(CharacterizationMixin):
     # define the custom version of calibrate_control_frequency()
     def calibrate_control_frequency(
@@ -450,13 +453,14 @@ class CustomCalibrationMixin(CalibrationMixin):
             readout_amplitudes=readout_amplitudes,  # enable custom readout amplitudes
         )
 
+
 class CustomExperiment(CustomCharacterizationMixin, CustomCalibrationMixin, qx.Experiment):
 # class CustomExperiment(CustomCharacterizationMixin, qx.Experiment):
     # inherit the custom calibrate_control_frequency function by extending CustomCharacterizationMixin
     pass
 
 
-def calibrate(ex: CustomExperiment):
+def calibrate(ex: CustomExperiment, enable_ro_amp_calib: bool = True) -> None:
     try:
         # start calibration
         ex.obtain_rabi_params(plot=False)                                                               # Rabi measurement
@@ -476,67 +480,65 @@ def calibrate(ex: CustomExperiment):
         # continue calibration if Rabi measurement terminated successfully
         control_frequencies = ex.calibrate_control_frequency(plot=False)                                # calibrate qubit frequencies
         ex.modified_frequencies(control_frequencies)                                                    # update qubit frequencies
-        # control_amplitude = {}
-        # for qubit in ex.qubit_labels:
-        #     qres = ex.measure_qubit_resonance(target=qubit, plot=False, save_image=False)             # measure qubit resonance
-        #     control_amplitude[qubit] = qres["estimated_amplitude"]
 
-        readout_amplitude = {}
-        for qubit in ex.qubit_labels:
-            res = ex.find_optimal_readout_amplitude(target=qubit, plot=False, save_image=False) # obtain readout amplitudes
-            readout_amplitude[qubit] = res["optimal_amplitude"]
+        readout_amplitude = None
+        if enable_ro_amp_calib:
+            readout_amplitude = {}
+            print("running readout amplitude calibration...")
+            for qubit in ex.qubit_labels:
+                res = ex.find_optimal_readout_amplitude(target=qubit, plot=False, save_image=False) # obtain readout amplitudes
+                readout_amplitude[qubit] = res["optimal_amplitude"]
 
         print("Warning! just measures readout frequencies, not runs calibration")
         readout_frequencies = ex.calibrate_readout_frequency(targets=ex.qubit_labels, readout_amplitudes=readout_amplitude)           # obtain readout frequencies
-        # readout_frequencies = ex.calibrate_readout_frequency(targets=ex.qubit_labels)                   # calibrate readout frequencies
 
         ex.calibrate_hpi_pulse(plot=False, readout_amplitudes=readout_amplitude)                                                      # calibrate hpi pulse
-        ex.calibrate_pi_pulse(plot=False, readout_amplitudes=readout_amplitude)                                                      # calibrate pi pulse
+        ex.calibrate_pi_pulse(plot=False, readout_amplitudes=readout_amplitude)                                                      # calibrate hpi pulse
         t1 = ex.t1_experiment(plot=False, readout_amplitudes=readout_amplitude)                                                       # T1 measurement
         t1 = t1.data                                                                            # store results of T1 measurement
         t2 = ex.t2_experiment(plot=False, readout_amplitudes=readout_amplitude)                                                       # T2 measurement
         t2 = t2.data                                                                            # store results of T2 measurement
         cls = ex.build_classifier(plot=False, readout_amplitudes=readout_amplitude)                                                   # build classifiers
-        # ex.calibrate_hpi_pulse(plot=False)                                                              # calibrate hpi pulse
-        # t1 = ex.t1_experiment(plot=False)                                                               # T1 measurement
-        # t1 = t1.data                                                                                    # store results of T1 measurement
-        # t2 = ex.t2_experiment(plot=False)                                                               # T2 measurement
-        # t2 = t2.data                                                                                    # store results of T2 measurement
-        # cls = ex.build_classifier(plot=False)                                                           # build classifiers
 
         # summarize results
         calib_note = ex.calib_note
         calib_note_dict = calib_note._dict if calib_note else None
 
         props = {
-            "resonator_frequency": {
-                key: readout_frequencies[key] for key in readout_frequencies
-            },
-            "qubit_frequency": control_frequencies,
-            "t1": {
-                key: t1[key].t1 for key in t1
-            }, 
-            "t1_err": {
-                key: t1[key].t1_err for key in t1
-            },
-            "t1_r2": {
-                key: t1[key].r2 for key in t1
-            },
-            "t2": {
-                key: t2[key].t2 for key in t2
-            },
-            "t2_err": {
-                key: t2[key].t2_err for key in t2
-            },
-            "t2_r2": {
-                key: t2[key].r2 for key in t2
-            },
-            "readout_fidelities": cls["readout_fidelities"],
-            "average_readout_fidelity": cls["average_readout_fidelity"],
+            CHIP_ID: {
+                "resonator_frequency": {
+                    key: readout_frequencies[key] for key in readout_frequencies
+                },
+                "qubit_frequency": control_frequencies,
+                "t1": {
+                    key: t1[key].t1 for key in t1
+                }, 
+                "t1_err": {
+                    key: t1[key].t1_err for key in t1
+                },
+                "t1_r2": {
+                    key: t1[key].r2 for key in t1
+                },
+                "t2": {
+                    key: t2[key].t2 for key in t2
+                },
+                "t2_err": {
+                    key: t2[key].t2_err for key in t2
+                },
+                "t2_r2": {
+                    key: t2[key].r2 for key in t2
+                },
+                "readout_fidelities": cls["readout_fidelities"],
+                "average_readout_fidelity": cls["average_readout_fidelity"],
+            }
         }
 
         params = {
-            key: readout_amplitude[key] for key in readout_amplitude
+            CHIP_ID: {
+                "readout amplitude": {
+                    key: readout_amplitude[key] for key in readout_amplitude
+                } if readout_amplitude else None
+            }
         }
 
         # output
